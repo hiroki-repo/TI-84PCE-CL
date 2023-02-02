@@ -1,0 +1,330 @@
+/*
+
+HSP??R?[???o?b?N???W???[??
+HSP3.5 beta 3?????m?F
+?p?u???b?N?h???C?????
+CC0 1.0????C?Z???X?????(CC0??R?????Y?????? http://creativecommons.org/publicdomain/zero/1.0/deed.ja)
+
+
+?R?[???o?b?N??????
+makeclbkfunc p1,p2,3,p4
+p1=?????              ?R?[???o?b?N??????K?v??????n???????|?C???^(?T?u???[?`???????R?[???o?b?N??????|?C???^)????????
+p2=0~(0)               ?n????????????? (p2<=0???????????????)
+p3=???x????            ?R?[???o?b?N????????????T?u???[?`??????x??
+p4=0|1(0)              ??яo???K????? 0=stdcall 1=cdecl   p4??????????stdcall??????
+
+??????????????? (p2<=0) ??A??яo?????? lparam=NULL?A wparam=0 ??????
+????????????     (p2>0)  ??A??яo?????? lparam=???????o?b?t?@?A?h???X?A wparam=?????????? ??????
+?????????????m??G???[??? ??A??яo?????? lparam=NULL?A wparam=0 ??????
+
+?T?u???[?`???????????????? stat ????l???R?[???o?b?N????????l??????
+
+?????o?b?t?@??T?u???[?`?????????????????? (lparam?Awparam??l??ρE???????)
+argclbkfunc ??????????擾??????A?????????????K?v??????Awparam?Alparam??l??j????????????
+
+
+lparam??wparam????????????擾
+argclbkfunc p1
+p1=?z??              ?????????擾???????^?z??
+
+?????????????^?z?????? p1 ?????????? (?????o?b?t?@????R?s?[??????)
+?R?[???o?b?N????????????T?u???[?`??????g?p???????????
+wparam ?? lparam ???擾?O??j???????????????яo?????????g?p???????????
+lparam ?? wparam ??`?F?b?N??s???????
+
+*/
+
+
+
+
+//???W???[??
+//-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|//
+#ifndef _modulemakeclbkfuncah_def_
+#define _modulemakeclbkfuncah_def_
+#module
+
+	#uselib "kernel32.dll"
+	#func VirtualProtect "VirtualProtect" sptr,int,int,var
+
+	#const  FUNCSIZE     22         //?}?V????????
+	#const  FUNCSIZEBYT  FUNCSIZE*4 //?}?V????????(?o?C?g)
+
+	#const  PAGE_EXECUTE_READWRITE  $00000040
+
+	#deffunc makeclbkfunc var p_bin, int numargs, label label_sub, int clmode,\
+	local hspctx,\
+	local int_numargs,\
+	local lbl_tmp,\
+	local int_tmp,\
+	local bin,\
+	local int_stat
+
+		lbl_tmp = label_sub  //?T?u???[?`?????x??
+		mref hspctx,68
+		int_numargs = numargs & $80003FFF
+		int_stat=stat        //stat????
+
+		//?e?[?u??????????m??
+		static_arr_str_bin(static_int_idx) = "" // ????? / ?v?f???
+		memexpand static_arr_str_bin(static_int_idx), FUNCSIZEBYT
+		p_bin = varptr(static_arr_str_bin(static_int_idx))
+
+		//?}?V????
+		dupptr bin, p_bin, FUNCSIZEBYT
+		bin(0)  = $BE56C031       , varptr(hspctx(9)), $B9044689, int_numargs , $8D530689
+		bin(5)  = $0000989E       , $7EC98500        , $E1C1511C, $13FF5102   , $04468959
+		bin(10) = $74C08559       , $FF0E890C        , $8F088C74, $E2FC8844   , $68C689F6
+		bin(15) = lpeek(lbl_tmp,0), $581C53FF        , $0574F685, $0453ff56   , $54838B58
+		bin(20) = $5B000002       , $0000C35E
+		if clmode==0 & int_numargs>0{
+			bin(FUNCSIZE-1) = $C25E | int_numargs << 18  //stdcall????????????????X?^?b?N????
+		}
+
+		static_int_idx++
+		VirtualProtect p_bin, FUNCSIZEBYT, PAGE_EXECUTE_READWRITE, int_tmp
+		return int_stat
+
+
+	#deffunc argclbkfunc array arr_int_args,\
+	local cln_arr_int_tmp
+
+		dupptr cln_arr_int_tmp, lparam, wparam*4
+		dim arr_int_args, wparam
+		memcpy arr_int_args, cln_arr_int_tmp, wparam*4
+		return
+
+#global
+
+#endif
+
+#module
+#deffunc setcs4dsv var prm_0
+cs=0
+repeat varsize(prm_0)-2-55:cs+=peek(prm_0,cnt+55):loop
+wpoke prm_0,varsize(prm_0)-2,cs
+return
+#defcfunc IsTI84PCEPrgm var prm_0
+return peek(prm_0,0x4a)
+
+#defcfunc GetTI84PCEPrgmType var prm_0
+switch peek(prm_0,0x4b)
+case 0x7b
+return "Asm"
+swbreak
+swend
+return "Unk"
+
+#global
+
+buffer 1,320,240
+cls 0
+mref vram,66
+gsel 0,0
+
+#include "eZ80.as"
+//#include "emulooper.as"
+#include "vpaging.as"
+
+sdim memory,0x1000000
+gosub *cpyvramtomem
+
+poke memory,1,0xed
+poke memory,2,0x7d
+starttouscode=3
+poke memory,0+starttouscode,0x5b
+poke memory,1+starttouscode,0x31
+lpoke memory,2+starttouscode,0xD1A87E
+starttouscode=8
+poke memory,0+starttouscode,0x5b
+poke memory,1+starttouscode,0xc3
+lpoke memory,2+starttouscode,0xD1A881
+pcodeoftrc=13
+poke memory,0+pcodeoftrc,0xed
+poke memory,1+pcodeoftrc,0x43
+lpoke memory,2+pcodeoftrc,0xd80000
+
+poke memory,5+pcodeoftrc,0xed
+poke memory,6+pcodeoftrc,0x53
+lpoke memory,7+pcodeoftrc,0xd80003
+
+poke memory,10+pcodeoftrc,0x22
+lpoke memory,11+pcodeoftrc,0xd80006
+
+poke memory,14+pcodeoftrc,0xf5
+poke memory,15+pcodeoftrc,0xe1
+poke memory,16+pcodeoftrc,0x22
+lpoke memory,17+pcodeoftrc,0xd80009
+
+poke memory,20+pcodeoftrc,0xe1
+poke memory,21+pcodeoftrc,0x22
+lpoke memory,22+pcodeoftrc,0xd8000c
+
+poke memory,25+pcodeoftrc,0xdd
+poke memory,26+pcodeoftrc,0x22
+lpoke memory,27+pcodeoftrc,0xd8000f
+
+poke memory,30+pcodeoftrc,0xfd
+poke memory,31+pcodeoftrc,0x22
+lpoke memory,32+pcodeoftrc,0xd80012
+
+poke memory,35+pcodeoftrc,0xed
+poke memory,36+pcodeoftrc,0x38
+poke memory,37+pcodeoftrc,0xe5
+
+poke memory,40+pcodeoftrc,0xfd
+poke memory,41+pcodeoftrc,0x2a
+lpoke memory,42+pcodeoftrc,0xd80012
+
+poke memory,45+pcodeoftrc,0xdd
+poke memory,46+pcodeoftrc,0x22
+lpoke memory,47+pcodeoftrc,0xd8000f
+
+poke memory,50+pcodeoftrc,0x2a
+lpoke memory,51+pcodeoftrc,0xd80009
+poke memory,54+pcodeoftrc,0xe5
+poke memory,55+pcodeoftrc,0xf1
+
+poke memory,56+pcodeoftrc,0x2a
+lpoke memory,57+pcodeoftrc,0xd80006
+
+poke memory,60+pcodeoftrc,0xed
+poke memory,61+pcodeoftrc,0x5b
+lpoke memory,62+pcodeoftrc,0xd80003
+
+poke memory,65+pcodeoftrc,0xed
+poke memory,66+pcodeoftrc,0x4b
+lpoke memory,67+pcodeoftrc,0xd80000
+
+poke memory,70+pcodeoftrc,0xc9
+repeat 34910
+poke memory,0+(cnt*4)+0x84,0xcd
+lpoke memory,1+(cnt*4)+0x84,pcodeoftrc
+loop
+
+makeclbkfunc clbk, 3, *RMKEARCH,1
+
+dim memptrtmp,4096//1048576
+repeat 4096:memptrtmp(cnt)=varptr(memory)+cnt*4096:loop
+memaccessptrset varptr(memptrtmp),4096//16777216
+//repeat 12:memptrtmp(cnt+3392)=varptr(vram48bt)+(cnt*4096):loop
+
+setmemaccess4nonmac clbk
+ez80macfuncset varptr(memaccessmod)
+
+cpu_reset
+control_reset
+
+cpu_set_speed 48000000/60/2/2
+
+onkey gosub *getkeys
+
+dircmdlines=""+dir_cmdline
+
+repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(dircmdlines))}else{break}:loop
+
+exist dircmdlines
+strsize2=strsize
+sdim img4exec,strsize2
+bload dircmdlines,img4exec
+
+if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)!"Asm"{end}
+
+memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
+
+repeat
+redraw 0
+clockcount+=cpu_execute()
+gosub *cpyvramfrommem
+gsel 0,0
+pos 0,0
+gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
+redraw 1
+await:loop
+stop
+
+*RMKEARCH
+argclbkfunc argv
+switch argv(2)&3
+case 2
+	switch argv(0)
+	swend
+swbreak
+case 3
+	switch argv(0)
+	case 0xe5
+		syscallnumber=(lpeek(memory,0xd8000c)&0xFFFFFF)-4
+		switch syscallnumber
+		case 0x00207C0//_PutS
+		gosub *cpyvramfrommem
+		gselbak=ginfo(3)
+		gsel 1,0
+		pos peek(memory,0xD00596),peek(memory,0xD00595)
+		dupptr message4show,varptr(memory)+(lpeek(memory,0xd80006)&0xFFFFFF),0x1000000,2
+		mes message4show
+		poke memory,0xD00596,ginfo(22)
+		poke memory,0xD00595,ginfo(23)
+		gsel gselbak,0
+		gosub *cpyvramtomem
+		redraw 0
+		gsel 0,0
+		pos 0,0
+		gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
+		redraw 1
+		swbreak
+		case 0x0020810//_ClrScrnFull
+		gselbak=ginfo(3)
+		gsel 1,0
+		cls 0
+		poke memory,0xD00596,0
+		poke memory,0xD00595,0
+		gsel gselbak,0
+		gosub *cpyvramtomem
+		redraw 0
+		gsel 0,0
+		pos 0,0
+		gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
+		redraw 1
+		swbreak
+		case 0x0020828//_homeup
+		swbreak
+		case 0x0020D8C//_GetKey
+		repeat:if (pressedkey=1){break}:await:loop
+		poke memory,0xd8000a,keycode4ret
+		pressedkey=0
+		swbreak
+		default
+		logmes "Unimplemented syscall("+strf("%06X",syscallnumber)+") occurred"
+		swbreak
+		swend
+	swbreak
+	swend
+swbreak
+swend
+return 0
+
+*cpyvramfrommem
+repeat 320
+cnt2=cnt
+repeat 240
+vraminfo=wpeek(memory,0xd40000+((cnt+(cnt2*240))*2))
+poke vram,(((cnt2*240)+(239-cnt))*3)+0,((vraminfo>>(5*2))&31)*8
+poke vram,(((cnt2*240)+(239-cnt))*3)+1,((vraminfo>>(5*1))&31)*8
+poke vram,(((cnt2*240)+(239-cnt))*3)+2,((vraminfo>>(5*0))&31)*8
+loop
+loop
+return
+
+*cpyvramtomem
+repeat 320
+cnt2=cnt
+repeat 240
+vraminfo=((((peek(vram,(((cnt2*240)+(239-cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,(((cnt2*240)+(239-cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,(((cnt2*240)+(239-cnt))*3)+2)/8)&31)<<(5*0)))
+wpoke memory,0xd40000+((cnt+(cnt2*240))*2),vraminfo
+loop
+loop
+return
+
+*getkeys
+pressedkey=1
+keycode4ret=wparam
+return
