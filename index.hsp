@@ -415,7 +415,7 @@ case 3
 		poke memory,0xD00595,ginfo(23)/24
 		}
 		if (ginfo(23)/24)>=10{
-		pos 0,0:gzoom 0,0,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
+		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
 		vraminfo=wpeek(memory,0x0D0268A)
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
@@ -449,7 +449,7 @@ case 3
 		poke memory,0xD00596,(ginfo(22)/12)+1
 		poke memory,0xD00595,ginfo(23)/24
 		if (ginfo(23)/24)>=10{
-		pos 0,0:gzoom 0,0,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
+		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
 		vraminfo=wpeek(memory,0x0D0268A)
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
