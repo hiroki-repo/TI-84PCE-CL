@@ -445,7 +445,6 @@ case 3
 		pos ((peek(memory,0xD00596)+cnt)\26)*12,(peek(memory,0xD00595)+((peek(memory,0xD00596)+cnt)/26))*24
 		if peek(message4showtmp,0)=0{break}
 		mes message4showtmp,1
-		loop
 		poke memory,0xD00596,(ginfo(22)/12)+1
 		poke memory,0xD00595,ginfo(23)/24
 		if (ginfo(23)/24)>=10{
@@ -454,6 +453,7 @@ case 3
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
 		}
+		loop
 		gsel gselbak,0
 		gosub *cpyvramtomem
 		redraw 0
