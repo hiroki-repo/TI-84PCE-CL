@@ -120,6 +120,12 @@ if ((wpeek(memory@,0xe30018)>>9)&1){prm_0x=((peek(prm_0x,1)&0xFF)<<(8*0))|((peek
 if ((wpeek(memory@,0xe30018)>>8)&1){prm_0x=((prm_0x>>(5*2))<<(5*0))|((prm_0x>>(5*1))<<(5*1))|((prm_0x>>(5*0))<<(5*2))}
 return prm_0x
 
+#deffunc SetTitleFromPrgm var prm_0
+sdim titlename4show,64
+memcpy titlename4show,prm_0,8,0,0x3c
+title titlename4show
+return
+
 #global
 
 buffer 1,320,240
@@ -304,11 +310,14 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
+exist dircmdlines:if strsize=-1{end}
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
 
 if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)!"Asm"{end}
+
+SetTitleFromPrgm img4exec
 
 memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
 
@@ -339,6 +348,16 @@ case 3
 	case 0xe5
 		syscallnumber=(lpeek(memory,0xd8000c)&0xFFFFFF)-4
 		switch syscallnumber
+		case 0x0000084//_boot_GetHardwareVers
+		poke memory,0xd8000a,7
+		swbreak
+		case 0x0020140//_DivHLBy10_s
+		poke memory,0xd8000a,10
+		case 0x0020144//_DivHLByA_s
+		divby=peek(memory,0xd8000a)
+		poke memory,0xd8000a,wpeek(memory,0xd80006)\divby
+		wpoke memory,0xd80006,wpeek(memory,0xd80006)/divby
+		swbreak
 		case 0x002014C//_GetCSC
 		if traccode>=1{
 			switch traccode
@@ -357,6 +376,12 @@ case 3
 		swbreak
 		case 0x0020320//_Mov9ToOP1
 		memcpy memory,memory,9,__OP1Start,(lpeek(memory,0xd80006)&0xFFFFFF)
+		swbreak
+		case 0x00204FC//_MemChk
+		hltmp=128*1024
+		poke memory,0xd80006+0,peek(hltmp,0)
+		poke memory,0xd80006+1,peek(hltmp,1)
+		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
 		case 0x002050C//_ChkFindSym
 		fname4readwrite=""
@@ -395,6 +420,17 @@ case 3
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
+		case 0x0020514//_InsertMem
+		detmp=(lpeek(memory,0xd80003)&0xFFFFFF)+(lpeek(memory,0xd80006)&0xFFFFFF)
+		hltmp=0
+		poke memory,0xd80003+0,peek(detmp,0)
+		poke memory,0xd80003+1,peek(detmp,1)
+		poke memory,0xd80003+2,peek(detmp,2)
+		
+		poke memory,0xd80006+0,peek(hltmp,0)
+		poke memory,0xd80006+1,peek(hltmp,1)
+		poke memory,0xd80006+2,peek(hltmp,2)
+		swbreak
 		case 0x002051C//_EnoughMem
 		poke memory,0xd80009,peek(memory,0xd80009)&0xFE
 		swbreak
@@ -409,6 +445,12 @@ case 3
 			repeat fileidmaxed:if filedb_str(cnt)=fname4readwritebase{fileid4target=cnt:break}:loop
 			if (fileid4target!-1){memset filedb_str(fileid4target),0,8,0:filedb_ptr(fileid4target)=0}
 		}
+		swbreak
+		case 0x0020590//_DelMem
+		memset memory,0,(lpeek(memory,0xd80003)&0xFFFFFF),(lpeek(memory,0xd80006)&0xFFFFFF)
+		poke memory,0xd80000+0,0
+		poke memory,0xd80000+1,0
+		poke memory,0xd80000+2,0
 		swbreak
 		case 0x00207B4//_PutMap
 		gosub *cpyvramfrommem
@@ -603,6 +645,57 @@ case 3
 		swbreak
 		case 0x0021AE8//_SetTextBGcolor
 		wpoke memory,0x00D0268A,(lpeek(memory,0xd80006)&0xFFFFFF)
+		swbreak
+		case 0x0021D48//_ChkBCIs0
+		if (lpeek(memory,0xd80000)&0xFFFFFF)=0{
+		poke memory,0xd80009,peek(memory,0xd80009)|64
+		}else{
+		poke memory,0xd80009,peek(memory,0xd80009)&((-1)-64)
+		}
+		poke memory,0xd8000a,peek(memory,0xd80002)
+		swbreak
+		case 0x0021D4C//_ChkDEIs0
+		if (lpeek(memory,0xd80003)&0xFFFFFF)=0{
+		poke memory,0xd80009,peek(memory,0xd80009)|64
+		}else{
+		poke memory,0xd80009,peek(memory,0xd80009)&((-1)-64)
+		}
+		poke memory,0xd8000a,peek(memory,0xd80005)
+		swbreak
+		case 0x0021D50//_ChkHLIs0
+		if (lpeek(memory,0xd80006)&0xFFFFFF)=0{
+		poke memory,0xd80009,peek(memory,0xd80009)|64
+		}else{
+		poke memory,0xd80009,peek(memory,0xd80009)&((-1)-64)
+		}
+		poke memory,0xd8000a,peek(memory,0xd80008)
+		swbreak
+		case 0x0021D54//_SetAToBCU
+		poke memory,0xd80002,peek(memory,0xd8000a)
+		swbreak
+		case 0x0021D58//_SetAToDEU
+		poke memory,0xd80005,peek(memory,0xd8000a)
+		swbreak
+		case 0x0021D5C//_SetAToHLU
+		poke memory,0xd80008,peek(memory,0xd8000a)
+		swbreak
+		case 0x0021D60//_SetBCUToA
+		poke memory,0xd8000a,peek(memory,0xd80002)
+		swbreak
+		case 0x0021D64//_SetBCUToB
+		poke memory,0xd80001,peek(memory,0xd80002)
+		swbreak
+		case 0x0021D68//_SetDEUToA
+		poke memory,0xd8000a,peek(memory,0xd80005)
+		swbreak
+		case 0x0021D6C//_SetDEUToB
+		poke memory,0xd80001,peek(memory,0xd80005)
+		swbreak
+		case 0x0021D70//_SetHLUToA
+		poke memory,0xd8000a,peek(memory,0xd80008)
+		swbreak
+		case 0x0021D74//_SetHLUToB
+		poke memory,0xd80001,peek(memory,0xd80008)
 		swbreak
 		case 0x0021E20//_os_SetDrawBGColor
 		wpoke memory,0x0D026AA,(lpeek(memory,0xd80006)&0xFFFFFF)
