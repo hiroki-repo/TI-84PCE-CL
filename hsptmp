@@ -294,6 +294,8 @@ strsize2=strsize
 sdim img4exec,strsize2
 bload dircmdlines,img4exec
 
+dupptr memory8000,varptr(memory)+0xd08000,128,2
+
 if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)!"Asm"{end}
 
 memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
@@ -359,8 +361,8 @@ case 3
 				fstmpptxp+=3
 				detmp=lpeek(fdtmpptxp,0)
 				fdtmpptxp+=(strsize2-76)
-				dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-76),2
-				bload fname4readwrite,buffer4dataread,(strsize2-76),74
+				dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-74),2
+				bload fname4readwrite,buffer4dataread,(strsize2-74),72
 				memcpy filedb_str(fileidmaxed),fname4readwritebase,8,0,0
 				filedb_ptr(fileidmaxed)=(lpeek(detmp,0)&0xFFFFFF)|((peek(fname4readwritebasetype,0))<<24)
 				fileidmaxed++
@@ -412,6 +414,12 @@ case 3
 		poke memory,0xD00596,(ginfo(22)/12)+1
 		poke memory,0xD00595,ginfo(23)/24
 		}
+		if (ginfo(23)/24)>=10{
+		pos 0,0:gzoom 0,0,1,0,24,320,216,0:poke memory,0xD00595,9
+		vraminfo=wpeek(memory,0x0D0268A)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		boxf 0,216,320,240
+		}
 		gsel gselbak,0
 		gosub *cpyvramtomem
 		redraw 0
@@ -440,6 +448,12 @@ case 3
 		loop
 		poke memory,0xD00596,(ginfo(22)/12)+1
 		poke memory,0xD00595,ginfo(23)/24
+		if (ginfo(23)/24)>=10{
+		pos 0,0:gzoom 0,0,1,0,24,320,216,0:poke memory,0xD00595,9
+		vraminfo=wpeek(memory,0x0D0268A)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		boxf 0,216,320,240
+		}
 		gsel gselbak,0
 		gosub *cpyvramtomem
 		redraw 0
@@ -546,7 +560,7 @@ case 3
 		swbreak
 		case 0x0021448//_Arc_Unarc
 		dupptr dataname,varptr(memory)+__OP1Start+1,8,2
-		datasize=(lpeek(memory,0xD0257B)&0xFFFFFF)-2//(lpeek(memory,0xd80006)&0xFFFFFF)
+		datasize=(lpeek(memory,0xD0257B)&0xFFFFFF)//(lpeek(memory,0xd80006)&0xFFFFFF)
 		if (lpeek(memory,0xd80003)&0xFFFFFF)>=0xd00000{
 		sdim data4created,datasize+78
 		sdim data4created,0x4a+datasize+2
@@ -563,7 +577,7 @@ case 3
 		poke data4created,0x45,0x80
 		wpoke data4created,0x46,wpeek(data4created,0x39)
 		wpoke data4created,0x48,wpeek(data4created,0x39)-2
-		memcpy data4created,memory,wpeek(data4created,0x39),0x4a,(lpeek(memory,0xd80003)&0xFFFFFF)
+		memcpy data4created,memory,wpeek(data4created,0x39),0x4a,(lpeek(memory,0xd80003)&0xFFFFFF)+2
 		setcs4dsv data4created
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
 		bsave fname4readwritebase+".8xv",data4created
