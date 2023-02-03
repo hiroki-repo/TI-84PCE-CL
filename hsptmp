@@ -114,6 +114,12 @@ swbreak
 swend
 return "Unk"
 
+#defcfunc vramformattrans int prm_0
+prm_0x=prm_0
+if ((wpeek(memory@,0xe30018)>>9)&1){prm_0x=((peek(prm_0x,1)&0xFF)<<(8*0))|((peek(prm_0x,0)&0xFF)<<(8*1))}
+if ((wpeek(memory@,0xe30018)>>8)&1){prm_0x=((prm_0x>>(5*2))<<(5*0))|((prm_0x>>(5*1))<<(5*1))|((prm_0x>>(5*0))<<(5*2))}
+return prm_0x
+
 #global
 
 buffer 1,320,240
@@ -246,6 +252,7 @@ dim filedb_ptr,filemaxread
 dim keyseed,256*2
 
 keyseed(8)=0x0f
+keyseed(37)=0x03,0x04,0x02,0x01
 keyseed(' ')=0x20
 keyseed(187|256)=0x0a
 keyseed(189)=0x0b
@@ -407,10 +414,10 @@ case 3
 		gosub *cpyvramfrommem
 		gselbak=ginfo(3)
 		gsel 1,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf peek(memory,0xD00596)*12,peek(memory,0xD00595)*24,(peek(memory,0xD00596)+1)*12,(peek(memory,0xD00595)+1)*24
-		vraminfo=wpeek(memory,0x0D02688)
+		vraminfo=vramformattrans(wpeek(memory,0x0D02688))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		pos peek(memory,0xD00596)*12,peek(memory,0xD00595)*24
 		message4showtmp="":poke message4showtmp,0,peek(memory,0xd8000a)
@@ -434,7 +441,7 @@ case 3
 		}
 		if peek(memory,0xD00595)>=10{
 		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
 		}
@@ -450,10 +457,10 @@ case 3
 		gosub *cpyvramfrommem
 		gselbak=ginfo(3)
 		gsel 1,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf peek(memory,0xD00596)*12,peek(memory,0xD00595)*24,(peek(memory,0xD00596)+1)*12,(peek(memory,0xD00595)+1)*24
-		vraminfo=wpeek(memory,0x0D02688)
+		vraminfo=vramformattrans(wpeek(memory,0x0D02688))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		pos peek(memory,0xD00596)*12,peek(memory,0xD00595)*24
 		message4showtmp="":poke message4showtmp,0,peek(memory,0xd8000a)
@@ -467,7 +474,7 @@ case 3
 		}
 		if peek(memory,0xD00595)>=10{
 		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
 		}
@@ -487,10 +494,10 @@ case 3
 		pos peek(memory,0xD00596)*12,peek(memory,0xD00595)*24
 		message4showtmp=""
 		repeat
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf (peek(memory,0xD00596)+0)*12,(peek(memory,0xD00595)+0)*24,(peek(memory,0xD00596)+1)*12,(peek(memory,0xD00595)+1)*24
-		vraminfo=wpeek(memory,0x0D02688)
+		vraminfo=vramformattrans(wpeek(memory,0x0D02688))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		poke message4showtmp,0,peek(message4show,cnt)
 		pos (peek(memory,0xD00596))*12,(peek(memory,0xD00595))*24
@@ -507,7 +514,7 @@ case 3
 		}
 		if peek(memory,0xD00595)>=10{
 		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
 		}
@@ -528,7 +535,7 @@ case 3
 		poke memory,0xD00595,(ginfo(23)/24)+1
 		if peek(memory,0xD00595)>=10{
 		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
-		vraminfo=wpeek(memory,0x0D0268A)
+		vraminfo=vramformattrans(wpeek(memory,0x0D0268A))
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		boxf 0,216,320,240
 		}
@@ -698,7 +705,7 @@ memcpy vram_8bit,memory,320,(239-cnt)*320,(cnt*320)+0xd40000
 loop
 gselbackup4cpyvram=ginfo(3)
 gsel 2,0
-repeat 256:vraminfo=wpeek(memory,0xe30200+(cnt*2)):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
 gsel 1,0
 pos 0,0
 gzoom 320,240,2,0,0,320,240,0
@@ -711,7 +718,7 @@ return
 repeat 320
 cnt2=cnt
 repeat 240
-vraminfo=wpeek(memory,0xd40000+((cnt+(cnt2*240))*2))
+vraminfo=vramformattrans(wpeek(memory,0xd40000+((cnt+(cnt2*240))*2)))
 poke vram,((((319-cnt2)*240)+(cnt))*3)+0,((vraminfo>>(5*2))&31)*8
 poke vram,((((319-cnt2)*240)+(cnt))*3)+1,((vraminfo>>(5*1))&31)*8
 poke vram,((((319-cnt2)*240)+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
@@ -724,7 +731,7 @@ lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
 if (lcdbitlength=3){
 gselbackup4cpyvram=ginfo(3)
 gsel 2,0
-repeat 256:vraminfo=wpeek(memory,0xe30200+(cnt*2)):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
 pos 0,0
 gzoom 320,240,1,0,0,320,240,0
 gsel gselbackup4cpyvram,0
@@ -739,7 +746,7 @@ return
 repeat 320
 cnt2=cnt
 repeat 240
-vraminfo=((((peek(vram,((((319-cnt2)*240)+(cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+2)/8)&31)<<(5*0)))
+vraminfo=vramformattrans(((((peek(vram,((((319-cnt2)*240)+(cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+2)/8)&31)<<(5*0))))
 wpoke memory,0xd40000+((cnt+(cnt2*240))*2),vraminfo
 loop
 loop
