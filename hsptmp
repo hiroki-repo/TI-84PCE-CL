@@ -395,6 +395,49 @@ case 3
 			if (fileid4target!-1){memset filedb_str(fileid4target),0,8,0:filedb_ptr(fileid4target)=0}
 		}
 		swbreak
+		case 0x00207B4//_PutMap
+		gosub *cpyvramfrommem
+		gselbak=ginfo(3)
+		gsel 1,0
+		vraminfo=wpeek(memory,0x0D0268A)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		boxf peek(memory,0xD00596)*12,peek(memory,0xD00595)*24,(peek(memory,0xD00596)+1)*12,(peek(memory,0xD00595)+1)*24
+		vraminfo=wpeek(memory,0x0D02688)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		pos peek(memory,0xD00596)*12,peek(memory,0xD00595)*24
+		message4showtmp="":poke message4showtmp,0,peek(memory,0xd8000a)
+		switch peek(message4showtmp,0)
+		case 0x0a
+		poke memory,0xD00595,peek(memory,0xD00595)+1
+		swbreak
+		case 0x0d
+		poke memory,0xD00596,0
+		swbreak
+		default
+		mes message4showtmp,1
+		swbreak
+		swend
+		if (ginfo(22)/12)>=25{
+		poke memory,0xD00596,0
+		poke memory,0xD00595,(ginfo(23)/24)+1
+		}else{
+		poke memory,0xD00596,(ginfo(22)/12)+1
+		poke memory,0xD00595,ginfo(23)/24
+		}
+		if peek(memory,0xD00595)>=10{
+		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
+		vraminfo=wpeek(memory,0x0D0268A)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		boxf 0,216,320,240
+		}
+		gsel gselbak,0
+		gosub *cpyvramtomem
+		redraw 0
+		gsel 0,0
+		pos 0,0
+		gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
+		redraw 1
+		swbreak
 		case 0x00207B8//_PutC
 		gosub *cpyvramfrommem
 		gselbak=ginfo(3)
@@ -438,16 +481,43 @@ case 3
 		repeat
 		vraminfo=wpeek(memory,0x0D0268A)
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
-		boxf (((peek(memory,0xD00596)+cnt)\26)+0)*12,(((peek(memory,0xD00595)+(peek(memory,0xD00596)+cnt))/26)+0)*24,(((peek(memory,0xD00596)+cnt)\26)+1)*12,(((peek(memory,0xD00595)+(peek(memory,0xD00596)+cnt))/26)+1)*24
+		boxf (peek(memory,0xD00596)+0)*12,(peek(memory,0xD00595)+0)*24,(peek(memory,0xD00596)+1)*12,(peek(memory,0xD00595)+1)*24
 		vraminfo=wpeek(memory,0x0D02688)
 		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
 		poke message4showtmp,0,peek(message4show,cnt)
-		pos ((peek(memory,0xD00596)+cnt)\26)*12,(peek(memory,0xD00595)+((peek(memory,0xD00596)+cnt)/26))*24
+		pos (peek(memory,0xD00596))*12,(peek(memory,0xD00595))*24
 		if peek(message4showtmp,0)=0{break}
 		mes message4showtmp,1
-		loop
 		poke memory,0xD00596,(ginfo(22)/12)+1
 		poke memory,0xD00595,ginfo(23)/24
+		if (ginfo(22)/12)>=25{
+		poke memory,0xD00596,0
+		poke memory,0xD00595,(ginfo(23)/24)+1
+		}else{
+		poke memory,0xD00596,(ginfo(22)/12)+1
+		poke memory,0xD00595,ginfo(23)/24
+		}
+		if peek(memory,0xD00595)>=10{
+		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
+		vraminfo=wpeek(memory,0x0D0268A)
+		color ((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8
+		boxf 0,216,320,240
+		}
+		loop
+		gsel gselbak,0
+		gosub *cpyvramtomem
+		redraw 0
+		gsel 0,0
+		pos 0,0
+		gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
+		redraw 1
+		swbreak
+		case 0x00207F0//_NewLine
+		gosub *cpyvramfrommem
+		gselbak=ginfo(3)
+		gsel 1,0
+		poke memory,0xD00596,0
+		poke memory,0xD00595,(ginfo(23)/24)+1
 		if peek(memory,0xD00595)>=10{
 		pos 0,0:gzoom 320,216,1,0,24,320,216,0:poke memory,0xD00595,9:poke memory,0xD00596,0
 		vraminfo=wpeek(memory,0x0D0268A)
@@ -462,6 +532,7 @@ case 3
 		gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
 		redraw 1
 		swbreak
+		case 0x0020808//_ClrLCDFull
 		case 0x0020810//_ClrScrnFull
 		gselbak=ginfo(3)
 		gsel 1,0
