@@ -359,7 +359,7 @@ case 3
 				fstmpptxp+=3
 				detmp=lpeek(fdtmpptxp,0)
 				fdtmpptxp+=(strsize2-76)
-				dupptr buffer4dataread,detmp,(strsize2-76),2
+				dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-76),2
 				bload fname4readwrite,buffer4dataread,(strsize2-76),74
 				memcpy filedb_str(fileidmaxed),fname4readwritebase,8,0,0
 				filedb_ptr(fileidmaxed)=(lpeek(detmp,0)&0xFFFFFF)|((peek(fname4readwritebasetype,0))<<24)
