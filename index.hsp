@@ -141,6 +141,8 @@ gsel 0,0
 #include "vpaging.as"
 
 sdim memory,0x1000000
+lpoke memory,0xE30010,0xd40000
+
 gosub *cpyvramtomem
 
 poke memory,1,0xed
@@ -243,6 +245,13 @@ repeat 34910
 poke memory,0+(cnt*4)+0x84,0xcd
 lpoke memory,1+(cnt*4)+0x84,pcodeoftrc
 loop
+
+op_stack=0xdf0000
+poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+
+dupptr lcdiomemory,varptr(memory)+0xe30000,0x1000,2
 
 fstmpptxp=0x290000
 fdtmpptxp=0x2c0000
@@ -395,10 +404,18 @@ case 3
 		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
 		case 0x002050C//_ChkFindSym
-		fname4readwrite=""
+		fname4readwrite="":fname4readwritebase_fp4fs=""
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,0x1000000,2
-		exist fname4readwritebase+".8xp":strsize2=strsize:if strsize2=-1{exist fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase+".8xv"}}else{fname4readwrite=fname4readwritebase+".8xp"}
+		repeat 2
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if peek(fname4readwritebasetype,0)=0x06{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
+		}else{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xv"}
+		}
+		if strsize!-1{break}
+		loop
 
 		if strsize2=-1{poke memory,0xd80009,peek(memory,0xd80009)|1}else{poke memory,0xd80009,peek(memory,0xd80009)&0xFE}
 
@@ -446,10 +463,18 @@ case 3
 		poke memory,0xd80009,peek(memory,0xd80009)&0xFE
 		swbreak
 		case 0x0020588//_DelVar
-		fname4readwrite=""
+		fname4readwrite="":fname4readwritebase_fp4fs=""
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,0x1000000,2
-		exist fname4readwritebase+".8xp":strsize2=strsize:if strsize2=-1{exist fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase+".8xv"}}else{fname4readwrite=fname4readwritebase+".8xp"}
+		repeat 2
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if peek(fname4readwritebasetype,0)=0x06{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
+		}else{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xv"}
+		}
+		if strsize!-1{break}
+		loop
 		if strsize2!-1{
 			delete fname4readwrite
 			fileid4target=-1
@@ -462,6 +487,60 @@ case 3
 		poke memory,0xd80000+0,0
 		poke memory,0xd80000+1,0
 		poke memory,0xd80000+2,0
+		swbreak
+		case 0x00205BC//_PopOP5
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		memcpy memory,memory,11,0x0D00624,op_stack
+		op_stack+=11
+		op_stack&=0xFFFFFF
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+		swbreak
+		case 0x00205C0//_PopOP3
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		memcpy memory,memory,11,0x0D0060E,op_stack
+		op_stack+=11
+		op_stack&=0xFFFFFF
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+		swbreak
+		case 0x00205C4//_PopOP1
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		memcpy memory,memory,11,0x0D005F8,op_stack
+		op_stack+=11
+		op_stack&=0xFFFFFF
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+		swbreak
+		case 0x002061C//_PushOP5
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		op_stack-=11
+		op_stack&=0xFFFFFF
+		memcpy memory,memory,11,op_stack,0x0D00624
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+		swbreak
+		case 0x0020620//_PushOP3
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		op_stack-=11
+		op_stack&=0xFFFFFF
+		memcpy memory,memory,11,op_stack,0x0D0060E
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
+		swbreak
+		case 0x0020628//_PushOP1
+		op_stack=(lpeek(memory,(0x0D00429+3))&0xFFFFFF)
+		op_stack-=11
+		op_stack&=0xFFFFFF
+		memcpy memory,memory,11,op_stack,0x0D005F8
+		poke memory,(0x0D00429+3)+0,peek(op_stack,0)
+		poke memory,(0x0D00429+3)+1,peek(op_stack,1)
+		poke memory,(0x0D00429+3)+2,peek(op_stack,2)
 		swbreak
 		case 0x00207B4//_PutMap
 		gosub *cpyvramfrommem
@@ -643,10 +722,18 @@ case 3
 		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
 		case 0x0021434//_DelVarArc
-		fname4readwrite=""
+		fname4readwrite="":fname4readwritebase_fp4fs=""
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,9,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
-		exist fname4readwritebase+".8xp":strsize2=strsize:if strsize2=-1{exist fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase+".8xv"}}else{fname4readwrite=fname4readwritebase+".8xp"}
+		repeat 2
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if peek(fname4readwritebasetype,0)=0x06{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
+		}else{
+			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xv":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xv"}
+		}
+		if strsize!-1{break}
+		loop
 		if strsize2!-1{
 			delete fname4readwrite
 			fileid4target=-1
@@ -834,7 +921,7 @@ return 0
 lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
 if (lcdbitlength=3){
 repeat 240
-memcpy vram_8bit,memory,320,(239-cnt)*320,(cnt*320)+0xd40000
+memcpy vram_8bit,memory,320,(239-cnt)*320,(cnt*320)+(lpeek(memory,0xE30010)&0xFFFFFF)
 loop
 gselbackup4cpyvram=ginfo(3)
 gsel 2,0
@@ -851,7 +938,7 @@ return
 repeat 320
 cnt2=cnt
 repeat 240
-vraminfo=vramformattrans(wpeek(memory,0xd40000+((cnt+(cnt2*240))*2)))
+vraminfo=vramformattrans(wpeek(memory,(lpeek(memory,0xE30010)&0xFFFFFF)+((cnt+(cnt2*240))*2)))
 poke vram,((((319-cnt2)*240)+(cnt))*3)+0,((vraminfo>>(5*2))&31)*8
 poke vram,((((319-cnt2)*240)+(cnt))*3)+1,((vraminfo>>(5*1))&31)*8
 poke vram,((((319-cnt2)*240)+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
@@ -870,7 +957,7 @@ gzoom 320,240,1,0,0,320,240,0
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramfrommem_16
 repeat 240
-memcpy memory,vram_8bit,320,(cnt*320)+0xd40000,(239-cnt)*320
+memcpy memory,vram_8bit,320,(cnt*320)+(lpeek(memory,0xE30010)&0xFFFFFF),(239-cnt)*320
 loop
 gsel gselbackup4cpyvram,0
 return
@@ -880,7 +967,7 @@ repeat 320
 cnt2=cnt
 repeat 240
 vraminfo=vramformattrans(((((peek(vram,((((319-cnt2)*240)+(cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+2)/8)&31)<<(5*0))))
-wpoke memory,0xd40000+((cnt+(cnt2*240))*2),vraminfo
+wpoke memory,(lpeek(memory,0xE30010)&0xFFFFFF)+((cnt+(cnt2*240))*2),vraminfo
 loop
 loop
 return
