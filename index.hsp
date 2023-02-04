@@ -850,6 +850,8 @@ case 3
 		poke memory,0xd80009,peek(memory,0xd80009)&((-1)-64)
 		}
 		swbreak
+		case 0x0021330//_CreateAppVar
+		case 0x0021334//_CreateProtProg
 		case 0x0021338//_CreateVar
 		hltmp=__OP1Start
 		lpoke memory,fstmpptxp,(lpeek(memory,0xd80006)&0xFFFFFF)
