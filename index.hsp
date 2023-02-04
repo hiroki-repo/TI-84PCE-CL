@@ -409,7 +409,7 @@ case 3
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,0x1000000,2
 		repeat 2
-		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe+"\\"}else{fname4readwritebase_fp4fs=""}
 		if peek(fname4readwritebasetype,0)=0x06{
 			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
 		}else{
@@ -468,7 +468,7 @@ case 3
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,0x1000000,2
 		repeat 2
-		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe+"\\"}else{fname4readwritebase_fp4fs=""}
 		if peek(fname4readwritebasetype,0)=0x06{
 			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
 		}else{
@@ -727,7 +727,7 @@ case 3
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,9,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
 		repeat 2
-		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe}else{fname4readwritebase_fp4fs=""}
+		if cnt=0{fname4readwritebase_fp4fs=""+dir_exe+"\\"}else{fname4readwritebase_fp4fs=""}
 		if peek(fname4readwritebasetype,0)=0x06{
 			exist fname4readwritebase_fp4fs+fname4readwritebase+".8xp":strsize2=strsize:if strsize2!-1{fname4readwrite=fname4readwritebase_fp4fs+fname4readwritebase+".8xp"}
 		}else{
