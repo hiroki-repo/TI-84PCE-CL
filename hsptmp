@@ -127,15 +127,17 @@ memcpy titlename4show,prm_0,8,0,0x3c
 title titlename4show
 return
 
+#defcfunc peek24 var prm_0,int prm_1
+return (lpeek(prm_0,prm_1)&0xFFFFFF)
+#deffunc poke24 var prm_0,int prm_1,int prm_2
+poke prm_0,prm_1+0,(prm_2>>(8*0))&0xFF
+poke prm_0,prm_1+1,(prm_2>>(8*1))&0xFF
+poke prm_0,prm_1+2,(prm_2>>(8*2))&0xFF
+return
+
 #global
 
-buffer 1,320,240
-cls 0
-mref vram,66
-buffer 2,320,240,1
-cls 0
-mref vram_8bit,66
-gsel 0,0
+endflagofprogram=0
 
 #include "eZ80.as"
 //#include "emulooper.as"
@@ -143,6 +145,14 @@ gsel 0,0
 
 sdim memory,0x1000000
 lpoke memory,0xE30010,0xd40000
+
+lpoke memory,0xe30000,0x1F0A0338
+lpoke memory,0xe30004,0x0402093F
+
+
+dim vramszbakxy,2
+
+gosub *initializevram
 
 gosub *cpyvramtomem
 
@@ -331,14 +341,18 @@ SetTitleFromPrgm img4exec
 
 memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
 
+vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
 redraw 0
 clockcount+=cpu_execute()
+if ((vramszbakxy(0)!lpeek(memory,0xe30004)) | (vramszbakxy(0)!lpeek(memory,0xe30000))){gosub *initializevram}
+vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 gosub *cpyvramfrommem
 gsel 0,0
 pos 0,0
 gzoom ginfo(12),ginfo(13),1,0,0,320,240,0
 redraw 1
+if endflagofprogram!0{end}
 await:loop
 stop
 
@@ -360,6 +374,16 @@ case 3
 		switch syscallnumber
 		case 0x0000084//_boot_GetHardwareVers
 		poke memory,0xd8000a,7
+		swbreak
+		case 0x0000088//_boot_GetKeyID
+		poke memory,0xd80006,0x1370
+		swbreak
+		case 0x000008C//_boot_GetBootVerMinor
+		poke memory,0xd8000a,1
+		swbreak
+		case 0x0000090//_boot_GetBootVerBuild
+		poke memory,0xd8000a,0
+		poke memory,0xd80001,0
 		swbreak
 		case 0x002013C//_CpHLDE
 		if (lpeek(memory,0xd80003)&0xFFFFFF)=(lpeek(memory,0xd80006)&0xFFFFFF){
@@ -910,7 +934,8 @@ case 3
 		swend
 	swbreak
 	case 0xe6
-		end
+		//end
+		endflagofprogram=1
 	swbreak
 	default
 		logmes "Unimplemented I/O Access("+strf("%04X",argv(0))+")"
@@ -924,28 +949,28 @@ return 0
 //cpu_int rnd(256)
 lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
 if (lcdbitlength=3){
-repeat 240
-memcpy vram_8bit,memory,320,(239-cnt)*320,(cnt*320)+(lpeek(memory,0xE30010)&0xFFFFFF)
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+memcpy vram_8bit,memory,((lpeek(memory,0xe30004)&0x3FF)+1),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF)
 loop
 gselbackup4cpyvram=ginfo(3)
 gsel 2,0
 repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
 gsel 1,0
 pos 0,0
-gzoom 320,240,2,0,0,320,240,0
+gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),2,0,0,((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),0
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramtomem_16
 gsel gselbackup4cpyvram,0
 return
 }
 *cpyvramfrommem_16
-repeat 320
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
 cnt2=cnt
-repeat 240
-vraminfo=vramformattrans(wpeek(memory,(lpeek(memory,0xE30010)&0xFFFFFF)+((cnt+(cnt2*240))*2)))
-poke vram,((((319-cnt2)*240)+(cnt))*3)+0,((vraminfo>>(5*2))&31)*8
-poke vram,((((319-cnt2)*240)+(cnt))*3)+1,((vraminfo>>(5*1))&31)*8
-poke vram,((((319-cnt2)*240)+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+vraminfo=vramformattrans(wpeek(memory,(lpeek(memory,0xE30010)&0xFFFFFF)+((cnt+(cnt2*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)))*2)))
+poke vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+0,((vraminfo>>(5*2))&31)*8
+poke vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+1,((vraminfo>>(5*1))&31)*8
+poke vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
 loop
 loop
 return
@@ -957,20 +982,20 @@ gselbackup4cpyvram=ginfo(3)
 gsel 2,0
 repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
 pos 0,0
-gzoom 320,240,1,0,0,320,240,0
+gzoom (lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,1,0,0,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,0
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramfrommem_16
-repeat 240
-memcpy memory,vram_8bit,320,(cnt*320)+(lpeek(memory,0xE30010)&0xFFFFFF),(239-cnt)*320
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+memcpy memory,vram_8bit,((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1)
 loop
 gsel gselbackup4cpyvram,0
 return
 }
 *cpyvramtomem_16
-repeat 320
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
 cnt2=cnt
-repeat 240
-vraminfo=vramformattrans(((((peek(vram,((((319-cnt2)*240)+(cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,((((319-cnt2)*240)+(cnt))*3)+2)/8)&31)<<(5*0))))
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+vraminfo=vramformattrans(((((peek(vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+0)/8)&31)<<(5*2))|(((peek(vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+1)/8)&31)<<(5*1))|(((peek(vram,(((((((lpeek(memory,0xe30004)&0x3FF)+1)-1)-cnt2)*((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16))+(cnt))*3)+2)/8)&31)<<(5*0))))
 wpoke memory,(lpeek(memory,0xE30010)&0xFFFFFF)+((cnt+(cnt2*240))*2),vraminfo
 loop
 loop
@@ -990,4 +1015,14 @@ wparam4kup=wparam
 if wparam4kup=16{
 shifted=0
 }
+return
+
+*initializevram
+buffer 1,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16
+cls 0
+mref vram,66
+buffer 2,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,1
+cls 0
+mref vram_8bit,66
+gsel 0,0
 return
