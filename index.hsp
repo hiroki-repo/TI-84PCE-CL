@@ -385,6 +385,101 @@ case 3
 		poke memory,0xd8000a,0
 		poke memory,0xd80001,0
 		swbreak
+		case 0x000009C//__memchr
+		poiter4ret=-1
+		repeat peek24(memory,peek24(memory,0xd80015)+9)
+		if memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,0,1)=peek24(memory,peek24(memory,0xd80015)+6){poiter4ret=cnt:break}
+		loop
+		if poiter4ret=-1{
+		poke24 memory,0xd80006,0
+		}else{
+		poke24 memory,0xd80006,peek24(memory,peek24(memory,0xd80015)+3)+poiter4ret
+		}
+		swbreak
+		case 0x00000A0//__memcmp
+		ret4function=0
+		repeat peek24(memory,peek24(memory,0xd80015)+9)
+		ret4function+=(memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,0,1)-memaccessmod(peek24(memory,peek24(memory,0xd80015)+6)+cnt,0,1))
+		loop
+		poke24 memory,0xd80006,ret4function
+		swbreak
+		case 0x00000A4//__memcpy
+		repeat peek24(memory,peek24(memory,0xd80015)+9)
+		ret4function=memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,memaccessmod(peek24(memory,peek24(memory,0xd80015)+6)+cnt,0,1),0)
+		loop
+		poke24 memory,0xd80006,peek24(memory,peek24(memory,0xd80015)+3)+peek24(memory,peek24(memory,0xd80015)+9)
+		swbreak
+		case 0x00000A8//__memmove
+		repeat peek24(memory,peek24(memory,0xd80015)+9)
+		ret4function=memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,memaccessmod(peek24(memory,peek24(memory,0xd80015)+6)+cnt,0,1),0)
+		loop
+		poke24 memory,0xd80006,peek24(memory,peek24(memory,0xd80015)+3)+peek24(memory,peek24(memory,0xd80015)+9)
+		swbreak
+		case 0x00000AC//__memset
+		repeat peek24(memory,peek24(memory,0xd80015)+9)
+		ret4function=memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,peek24(memory,peek24(memory,0xd80015)+6),0)
+		loop
+		poke24 memory,0xd80006,peek24(memory,peek24(memory,0xd80015)+3)
+		swbreak
+		case 0x00000B0//__memclear
+		repeat peek24(memory,peek24(memory,0xd80015)+6)
+		ret4function=memaccessmod(peek24(memory,peek24(memory,0xd80015)+3)+cnt,0,0)
+		loop
+		poke24 memory,0xd80006,peek24(memory,peek24(memory,0xd80015)+3)
+		swbreak
+		case 0x00000BC//_sprintf
+		stringout4func=""
+		sdim string4show,65536
+		string4slice="":repeat:poke string4slice,0,memaccessmod(peek24(memory,peek24(memory,0xd80015)+9)+cnt,0,1):string4show+=string4slice:if peek(string4slice,0)=0{break}:loop
+			switch peek24(memory,peek24(memory,0xd80015)+3)
+			case 1
+			stringout4func=strf(string4show)
+			swbreak
+			case 2
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12))
+			swbreak
+			case 3
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15))
+			swbreak
+			case 4
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18))
+			swbreak
+			case 5
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21))
+			swbreak
+			case 6
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24))
+			swbreak
+			case 7
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27))
+			swbreak
+			case 8
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30))
+			swbreak
+			case 9
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33))
+			swbreak
+			case 10
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33),peek24(memory,peek24(memory,0xd80015)+36))
+			swbreak
+			case 11
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33),peek24(memory,peek24(memory,0xd80015)+36),peek24(memory,peek24(memory,0xd80015)+39))
+			swbreak
+			case 12
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33),peek24(memory,peek24(memory,0xd80015)+36),peek24(memory,peek24(memory,0xd80015)+39),peek24(memory,peek24(memory,0xd80015)+42))
+			swbreak
+			case 13
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33),peek24(memory,peek24(memory,0xd80015)+36),peek24(memory,peek24(memory,0xd80015)+39),peek24(memory,peek24(memory,0xd80015)+42),peek24(memory,peek24(memory,0xd80015)+45))
+			swbreak
+			default
+			stringout4func=strf(string4show,peek24(memory,peek24(memory,0xd80015)+12),peek24(memory,peek24(memory,0xd80015)+15),peek24(memory,peek24(memory,0xd80015)+18),peek24(memory,peek24(memory,0xd80015)+21),peek24(memory,peek24(memory,0xd80015)+24),peek24(memory,peek24(memory,0xd80015)+27),peek24(memory,peek24(memory,0xd80015)+30),peek24(memory,peek24(memory,0xd80015)+33),peek24(memory,peek24(memory,0xd80015)+36),peek24(memory,peek24(memory,0xd80015)+39),peek24(memory,peek24(memory,0xd80015)+42),peek24(memory,peek24(memory,0xd80015)+45),peek24(memory,peek24(memory,0xd80015)+48))
+			swbreak
+			swend
+		repeat strlen(stringout4func)
+		ret4function=memaccessmod(peek24(memory,peek24(memory,0xd80015)+6)+cnt,peek(stringout4func,cnt),0)
+		loop
+		poke24 memory,0xd80006,strlen(stringout4func)
+		swbreak
 		case 0x002013C//_CpHLDE
 		if (lpeek(memory,0xd80003)&0xFFFFFF)=(lpeek(memory,0xd80006)&0xFFFFFF){
 			poke memory,0xd80009,peek(memory,0xd80009)|64
