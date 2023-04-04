@@ -156,6 +156,9 @@ lpoke memory,0xe30000,0x1F0A0338
 lpoke memory,0xe30004,0x0402093F
 lpoke memory,0xe30018,0x0000092D
 
+poke memory,0x0D02504,9
+poke memory,0x0D02505,25
+
 
 dim vramszbakxy,2
 
@@ -168,8 +171,16 @@ if strsize=-1{
 pointertosetinit=0
 }else{
 pointertosetinit=0x500000
+poke memory,0+pointertosetinit,0xed
+poke memory,1+pointertosetinit,0x7d
+poke memory,2+pointertosetinit,0x21
+lpoke memory,3+pointertosetinit,0x000E4F
+poke memory,6+pointertosetinit,0x22
+lpoke memory,7+pointertosetinit,0x5
+pointertosetinit+=10
 }
 
+poke memory,0+pointertosetinit,0xfb
 poke memory,1+pointertosetinit,0xed
 poke memory,2+pointertosetinit,0x7d
 starttouscode=3
@@ -190,6 +201,14 @@ lpoke memory,1+pointertosetinit+starttouscode,0xD1A881
 poke memory,21+pointertosetinit,0xed
 poke memory,22+pointertosetinit,0x38
 poke memory,23+pointertosetinit,0xe6
+
+exist bootromimg
+if strsize=-1{
+pointertosetinit=0
+}else{
+pointertosetinit=0x500000
+}
+
 pcodeoftrc=0x400000
 poke memory,0+pcodeoftrc,0xed
 poke memory,1+pcodeoftrc,0x43
@@ -337,7 +356,7 @@ poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x207f0
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
+lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 
 bootromread=1
 }
@@ -436,10 +455,15 @@ SetTitleFromPrgm img4exec
 memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
 
 if bootromread=1{
-poke memory,0,0xfb
+//poke memory,0,0xfb
 //wpoke memory,1,0x7ded
 //lpoke memory,4,0xc3|(pointertosetinit<<8)
-lpoke memory,0xeab,0xc3|(pointertosetinit<<8)
+//memset memory,0x76,0x40000,0xd00000
+//lpoke memory,0xd0fffc,0xc3|(0xd0000<<8)
+//lpoke memory,0xD10913,0xc3|(pointertosetinit<<8)
+//poke24 memory,0xD1A87E,pointertosetinit
+lpoke memory,0x4,0xc3|(pointertosetinit<<8)
+//poke24 memory,0xD,pointertosetinit
 }
 }
 
@@ -447,7 +471,7 @@ vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
 redraw 0
 clockcount+=cpu_execute()
-cpu_int 0x38
+//cpu_int rnd(256)//0x38
 if ((vramszbakxy(0)!lpeek(memory,0xe30004)) | (vramszbakxy(1)!lpeek(memory,0xe30000))){gosub *initializevram}
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 gosub *cpyvramfrommem
