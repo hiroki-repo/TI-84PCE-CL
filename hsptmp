@@ -116,7 +116,7 @@ swend
 return "Unk"
 
 #defcfunc vramformattrans int prm_0
-prm_0x=prm_0:lcdbppsetting=((wpeek(memory@,0xe30018)>>1)&3)
+prm_0x=prm_0:lcdbppsetting=((wpeek(memory@,0xe30018)>>1)&7)
 if ((wpeek(memory@,0xe30018)>>10)&1){prm_0x=((peek(prm_0x,1)&0xFF)<<(8*0))|((peek(prm_0x,0)&0xFF)<<(8*1))}
 if ((wpeek(memory@,0xe30018)>>8)&1){if lcdbppsetting=6{prm_0x=(((prm_0x>>((5*2)+1))&31)<<(5*0))|(((prm_0x>>(5*1))&63)<<(5*1))|(((prm_0x>>(5*0))&31)<<((5*2)+1))}else{if lcdbppsetting=7{prm_0x=(((prm_0x>>(4*2))&15)<<(4*0))|(((prm_0x>>(4*1))&15)<<(4*1))|(((prm_0x>>(4*0))&15)<<(4*2))}else{prm_0x=(((prm_0x>>(5*2))&31)<<(5*0))|(((prm_0x>>(5*1))&31)<<(5*1))|(((prm_0x>>(5*0))&31)<<(5*2))}}}
 return prm_0x
@@ -479,7 +479,7 @@ lpoke memory,0xea7,0xc3|(pointertosetinit<<8)
 }
 wpoke memory,0x00D0268A,0x7FFF
 
-wpoke memory,0x00E30018,(4<<1)|(1<<8)
+//wpoke memory,0x00E30018,(4<<1)|(1<<8)
 
 //lpoke memory,0xf00004,0x3011
 lpoke memory,0xf00004,4
@@ -1418,9 +1418,9 @@ cnt2=cnt
 //cnt2=0
 repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
 vraminfo=vramformattrans(wpeek(memory,(lpeek(memory,0xE30010)&0xFFFFFF)+(((cnt^((wpeek(memory@,0xe30018)>>9)&1))+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1)))*2)))
-poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+0,((vraminfo>>((5*2)+1))&31)*8
-poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+1,((vraminfo>>(5*1))&63)*4
-poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+0,((vraminfo>>(5*2))&0x3e)*4
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+1,((vraminfo>>(5*1))&0x3f)*4
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,((vraminfo<<(1))&0x3e)*4
 loop
 loop
 return
@@ -1491,7 +1491,7 @@ repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
 cnt2=cnt
 //cnt2=0
 repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
-vraminfo=vramformattrans((((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+0)/8)&31)<<((5*2)+1))|(((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+1)/4)&63)<<(5*1))|(((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2)/8)&31)<<(5*0)))
+vraminfo=vramformattrans((((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+0)/4)&0x3e)<<(5*2))|(((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+1)/4)&0x3f)<<(5*1))|(((peek(vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2)/4)&0x3e)<<(5*0)))
 wpoke memory,(lpeek(memory,0xE30010)&0xFFFFFF)+(((cnt^((wpeek(memory@,0xe30018)>>9)&1))+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1)))*2),vraminfo
 loop
 loop
