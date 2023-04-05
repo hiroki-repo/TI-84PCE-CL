@@ -438,7 +438,7 @@ control_reset
 
 dupptr eZ80_reg,cpu_get_regptr(),64,2
 
-cpu_set_speed 48000000/60000
+cpu_set_speed 48000000/6000/5
 //cpu_set_speed 6000000/60/2
 
 privillegedspacer=0xffffff,0xd1887c,0xd1887c,0
@@ -560,6 +560,8 @@ cpu_int rnd(256)
 lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<15)
 }
 lpoke memory,0xf20034,0
+repeat 10
+timerintrpt=0
 repeat 3
 if ((lpeek(memory,0xf20030)>>((3*cnt)+0))&1){
 if lpeek(memory,0xf20000+(0x10*cnt))!0{
@@ -575,6 +577,7 @@ if (lpeek(memory,0xf20008+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))){lpoke m
 if (lpeek(memory,0xf2000C+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))){lpoke memory,0xf20034,(lpeek(memory,0xf20034)|(1<<((3*cnt)+1)))}
 if ((lpeek(memory,0xf20030)>>((3*cnt)+2))&1){
 cpu_int rnd(256)
+timerintrpt=1
 if ((lpeek(memory,0xf00004)&(1<<(1+cnt)))!0){
 lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<(1+cnt))
 }
@@ -582,7 +585,8 @@ lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<(1+cnt))
 }
 }
 loop
-if (cnt\10000)=0{
+loop
+if (cnt\1000)=0{
 if ((vramszbakxy(0)!lpeek(memory,0xe30004)) | (vramszbakxy(1)!lpeek(memory,0xe30000))){gosub *initializevram}
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 gosub *cpyvramfrommem
@@ -609,7 +613,7 @@ case 2
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x93
 		swbreak
 		case 0x01
-		cpu_set_speed (6000000/60000)*(1<<(argv(1)&3))
+		cpu_set_speed (6000000/6000/5)*(1<<(argv(1)&3))
 		swbreak
 		case 0x05
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x1f
