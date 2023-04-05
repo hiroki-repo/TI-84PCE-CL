@@ -438,7 +438,7 @@ control_reset
 
 dupptr eZ80_reg,cpu_get_regptr(),64,2
 
-cpu_set_speed 48000000/6000
+cpu_set_speed 48000000/60000
 //cpu_set_speed 6000000/60/2
 
 privillegedspacer=0xffffff,0xd1887c,0xd1887c,0
@@ -609,7 +609,7 @@ case 2
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x93
 		swbreak
 		case 0x01
-		cpu_set_speed (6000000/6000)*(1<<(argv(1)&3))
+		cpu_set_speed (6000000/60000)*(1<<(argv(1)&3))
 		swbreak
 		case 0x05
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x1f
