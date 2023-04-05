@@ -438,7 +438,7 @@ control_reset
 
 dupptr eZ80_reg,cpu_get_regptr(),64,2
 
-cpu_set_speed 48000000/60000
+cpu_set_speed 48000000/6000
 //cpu_set_speed 6000000/60/2
 
 privillegedspacer=0xffffff,0xd1887c,0xd1887c,0
@@ -458,6 +458,7 @@ exist dircmdlines:if strsize=-1{if bootromread=0{end}}else{
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
+dupptr memorytimer,varptr(memory)+0xf20000,65536,2
 
 if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)!"Asm"{end}
 
@@ -481,9 +482,23 @@ wpoke memory,0x00D0268A,0x7FFF
 wpoke memory,0x00E30018,(4<<1)|(1<<8)
 
 //lpoke memory,0xf00004,0x3011
-lpoke memory,0xf00004,0x3001
+lpoke memory,0xf00004,4
+lpoke memory,0xf00008,4
+
+/*lpoke memory,0xf20000,0x01
+lpoke memory,0xf20004,0x02
+lpoke memory,0xf20020,0x322d
+lpoke memory,0xf20024,0xc000
+lpoke memory,0xf20030,0x03
+lpoke memory,0xf20034,0xc3*/
+lpoke memory,0xf20038,0x00010801
 
 lpoke memory,0xf0000c,0x19
+lpoke memory,0xf00004,0x300F
+lpoke memory,0xf00008,0
+lpoke memory,0xf0000C,0x19
+lpoke memory,0xf00020,0x8000
+lpoke memory,0xf00050,0x16160001
 
 }
 
@@ -532,6 +547,7 @@ poke memory,0xf10010,peek(memory,0xf10010)|1
 }
 
 lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c)
+lpoke memory,0xf00014,lpeek(memory,0xf00000)&lpeek(memory,0xf00004)
 clockcount+=cpu_execute()
 if ((lpeek(memory,0xf00004)&(1<<4))!0){
 if (cnt\(5-(peek(controlportpoll,0)&3)))=0{
@@ -543,19 +559,30 @@ if ((lpeek(memory,0xf00004)&(1<<15))!0){
 cpu_int rnd(256)
 lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<15)
 }
+lpoke memory,0xf20034,0
 repeat 3
-if ((lpeek(memory,0xf00004)&(1<<(1+cnt)))!0){
-if ((lpeek(memory,0xf20030)>>((3*cnt)+2))&1){
+if ((lpeek(memory,0xf20030)>>((3*cnt)+0))&1){
+if lpeek(memory,0xf20000+(0x10*cnt))!0{
 if ((lpeek(memory,0xf20030)>>(9+cnt))&1){lpoke memory,0xf20000+(0x10*cnt),lpeek(memory,0xf20000+(0x10*cnt))+1}else{lpoke memory,0xf20000+(0x10*cnt),lpeek(memory,0xf20000+(0x10*cnt))-1}
-if ((lpeek(memory,0xf20034)>>((3*cnt)+2))&1){lpoke memory,0xf20000+(0x10*cnt),lpeek(memory,0xf20004+(0x10*cnt))}
-if ((lpeek(memory,0xf20008+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt)))*((lpeek(memory,0xf20034)>>((3*cnt)+0))&1)) | ((lpeek(memory,0xf2000C+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt)))*((lpeek(memory,0xf20034)>>((3*cnt)+1))&1)){
+}
+if lpeek(memory,0xf20000+(0x10*cnt))=0{
+lpoke memory,0xf20000+(0x10*cnt),0
+lpoke memory,0xf20000+(0x10*cnt),lpeek(memory,0xf20004+(0x10*cnt))
+lpoke memory,0xf20034,lpeek(memory,0xf20034)|(1<<((3*cnt)+2))
+}
+if (lpeek(memory,0xf20008+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))) | (lpeek(memory,0xf2000C+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))){
+if (lpeek(memory,0xf20008+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))){lpoke memory,0xf20034,(lpeek(memory,0xf20034)|(1<<((3*cnt)+0)))}
+if (lpeek(memory,0xf2000C+(0x10*cnt))=lpeek(memory,0xf20000+(0x10*cnt))){lpoke memory,0xf20034,(lpeek(memory,0xf20034)|(1<<((3*cnt)+1)))}
+if ((lpeek(memory,0xf20030)>>((3*cnt)+2))&1){
 cpu_int rnd(256)
+if ((lpeek(memory,0xf00004)&(1<<(1+cnt)))!0){
 lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<(1+cnt))
 }
 }
 }
+}
 loop
-if (cnt\1000)=0{
+if (cnt\10000)=0{
 if ((vramszbakxy(0)!lpeek(memory,0xe30004)) | (vramszbakxy(1)!lpeek(memory,0xe30000))){gosub *initializevram}
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 gosub *cpyvramfrommem
@@ -582,7 +609,7 @@ case 2
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x93
 		swbreak
 		case 0x01
-		cpu_set_speed (6000000/60000)*(1<<(argv(1)&3))
+		cpu_set_speed (6000000/6000)*(1<<(argv(1)&3))
 		swbreak
 		case 0x05
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x1f
@@ -1500,14 +1527,15 @@ keycode4ret=keyseed(wparam2x|((shifted!0)*256))
 if (wparam2x>='A' & wparam2x<='Z') | (shifted!0 & (wparam2x=189 | wparam2x=226)) | (shifted=0 & (wparam2x=186)){traccode=1}
 if (wparam2x=219 | wparam2x=221){traccode=2}
 }
-if (peek(memory,0xf50004)<((keycode4ret-1)\8)) & (peek(memory,0xf50005)<(7-((keycode4ret-1)/8))){
+if (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,peek(memory,0xf50008)|4}
+if (peek(memory,0xf50000)&3)!1 & (peek(memory,0xf50004)<((keycode4ret-1)\8)) & (peek(memory,0xf50005)<=(7-((keycode4ret-1)/8))){
 poke memory,0xf5001e-(((keycode4ret-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))|(1<<((keycode4ret-1)\8))
 }
 return
 
 *getkeys_up
 wparam4kup=wparam
-if (peek(memory,0xf50004)<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)) & (peek(memory,0xf50005)<(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))){
+if (peek(memory,0xf50000)&3)!1 & (peek(memory,0xf50004)<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)) & (peek(memory,0xf50005)<=(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))){
 poke memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2),peek(memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2))&((-1)-(1<<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)))
 }
 if (peek(memory,0xf50000)&3)>=2{
@@ -1515,7 +1543,7 @@ if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
 }
 if ((lpeek(memory,0xf00004)&(1<<10))!0){
 poke memory,0xf50008,peek(memory,0xf50008)|1
-if (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,peek(memory,0xf50008)|4}
+if (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,peek(memory,0xf50008)&((-1)-4)}
 if peek(memory,0xf5000C)&peek(memory,0xf50008){cpu_int rnd(256):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
 }
 if wparam4kup=16{
