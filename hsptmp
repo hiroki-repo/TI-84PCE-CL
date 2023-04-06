@@ -469,8 +469,8 @@ control_reset
 
 dupptr eZ80_reg,cpu_get_regptr(),64,2
 
-cpu_set_speed 48000000/6000/5
-//cpu_set_speed 6000000/60/2
+//cpu_set_speed 48000000/6000/5
+cpu_set_speed 6000000/6000/5
 
 privillegedspacer=0xffffff,0xd1887c,0xd1887c,0
 
