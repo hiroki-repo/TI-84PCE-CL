@@ -485,7 +485,7 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
-exist dircmdlines:if strsize=-1{if bootromread=0{end}}else{
+exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory}}else{
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
