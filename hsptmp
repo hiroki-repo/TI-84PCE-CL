@@ -356,12 +356,12 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x20588
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
-ptr4ovwrite=0x20808
+/*ptr4ovwrite=0x20808
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x20810
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 ptr4ovwrite=0x20d8c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
@@ -377,9 +377,9 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x21448
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
-ptr4ovwrite=0x21a10
+/*ptr4ovwrite=0x21a10
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 ptr4ovwrite=0x21f98
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
@@ -494,7 +494,7 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
-exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory:memcpy memory,stubdata,0x6000,0xd00000,0}}else{
+exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}}else{
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
@@ -549,6 +549,8 @@ lpoke memory,0xf00020,0x8000
 lpoke memory,0xf00050,0x16160001
 
 }
+
+//poke memory,0xf30020,1
 
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
@@ -703,7 +705,12 @@ case 2
 	default
 		//if argv(0)=0xd000{dialog}
 		//logmes "Unimplemented I/O Access("+strf("%04X",argv(0))+")"
-		return memaccessmod((((argv(0)&0xF000)-0x1000)<<8)|(argv(0)&0xFF),argv(1),0)
+		if argv(0)<0x4000{
+		return memaccessmod(((((argv(0)&0xF000)-0x1000)<<4)+0xe00000)|(argv(0)&0xFF),argv(1),0)
+		}else{
+		return memaccessmod(((((argv(0)&0xF000)-0x5000)<<4)+0xf00000)|(argv(0)&0xFF),argv(1),0)
+		}
+		//return memaccessmod(((((argv(0)&0xF000)-0x1000)<<4)+0xe00000)|(argv(0)&0xFF),argv(1),0)
 	swbreak
 	swend
 		}else{
@@ -1494,7 +1501,11 @@ case 3
 	swbreak
 	default
 		//logmes "Unimplemented I/O Access("+strf("%04X",argv(0))+")"
-		return memaccessmod((((argv(0)&0xF000)-0x1000)<<8)|(argv(0)&0xFF),argv(1),1)
+		if argv(0)<0x4000{
+		return memaccessmod(((((argv(0)&0xF000)-0x1000)<<4)+0xe00000)|(argv(0)&0xFF),argv(1),1)
+		}else{
+		return memaccessmod(((((argv(0)&0xF000)-0x5000)<<4)+0xf00000)|(argv(0)&0xFF),argv(1),1)
+		}
 	swbreak
 	swend
 	}else{
