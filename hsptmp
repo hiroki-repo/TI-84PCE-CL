@@ -521,6 +521,8 @@ lpoke memory,0xea7,0xc3|(pointertosetinit<<8)
 memcpy memory,stubdata,0x500,0xd00000,0
 //memset memory,0,0xd005f8,0xB
 //poke memory,0xD00595,0xd5-0x0a
+}else{
+poke memory,0xD00595,2
 }
 wpoke memory,0x00D0268A,0xFFFF
 
