@@ -157,18 +157,19 @@ lpoke memory,0xe30004,0x0402093F
 lpoke memory,0xe30018,0x0000092D
 
 //poke memory,0x0D02504,9
-poke memory,0x0D000A0,0xa
-poke memory,0x0D000C3,0xa
-poke memory,0x0D005C5,0xa
-poke memory,0x0D02505,0xa//25
-poke memory,0x0D02684,0x25
-poke memory,0x0D02685,0xd5
-poke memory,0x0D02A61,0xa
+poke memory,0x0D02505,0xa
 
 
 dim vramszbakxy,2
 
 gosub *initializevram
+
+gsel 1,0
+
+color 80,80,80
+boxf 0,0,320,24
+
+gsel 0,0
 
 gosub *cpyvramtomem
 
@@ -493,7 +494,7 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
-exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory}}else{
+exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory:memcpy memory,stubdata,0x6000,0xd00000,0}}else{
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
