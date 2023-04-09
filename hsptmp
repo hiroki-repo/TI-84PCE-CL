@@ -173,6 +173,13 @@ gsel 0,0
 
 gosub *cpyvramtomem
 
+#uselib "Kernel32.dll"
+#func GetEnvironmentVariableA "GetEnvironmentVariableA" str,var,int
+
+sdim usecastrueorfalse,64
+GetEnvironmentVariableA "TI84PCECL_USE_CAS",usecastrueorfalse,64
+repeat 64:if peek(usecastrueorfalse,cnt)>='A' & peek(usecastrueorfalse,cnt)<='Z'{poke usecastrueorfalse,cnt,peek(usecastrueorfalse,cnt)+32}:loop
+
 exist bootromimg
 if strsize=-1{
 pointertosetinit=0
@@ -181,19 +188,22 @@ pointertosetinit=0x500000
 poke memory,0+pointertosetinit,0xed
 poke memory,1+pointertosetinit,0x7d
 poke memory,2+pointertosetinit,0x21
-lpoke memory,3+pointertosetinit,0x0e2842
+lpoke memory,3+pointertosetinit,0x08D2E0
 poke memory,6+pointertosetinit,0x22
-lpoke memory,7+pointertosetinit,0xea8
+lpoke memory,7+pointertosetinit,0x08D64E
 poke memory,10+pointertosetinit,0x3e
-poke memory,11+pointertosetinit,0xed
+poke memory,11+pointertosetinit,0xcd
 poke memory,12+pointertosetinit,0x32
-lpoke memory,13+pointertosetinit,0xea7
+lpoke memory,13+pointertosetinit,0x08D64D
 poke memory,16+pointertosetinit,0xfd
 poke memory,17+pointertosetinit,0x21
 lpoke memory,18+pointertosetinit,0xd00080
 poke memory,0xd00080+0x1b,64
 pointertosetinit+=21
 poke memory,0xD00589,1
+if usecastrueorfalse="true"{returntocas=1}else{
+returntocas=int(usecastrueorfalse)
+}
 }
 
 poke memory,0+pointertosetinit,0xfb
@@ -211,12 +221,28 @@ poke memory,13+pointertosetinit,0x3e
 poke memory,14+pointertosetinit,0xd0
 poke memory,15+pointertosetinit,0xed
 poke memory,16+pointertosetinit,0x6d
+exist bootromimg
+if strsize!-1{
+starttouscode=17
+poke memory,0+pointertosetinit+starttouscode,0xcd
+lpoke memory,1+pointertosetinit+starttouscode,0x21A3C
+starttouscode=21
+poke memory,0+pointertosetinit+starttouscode,0xcd
+lpoke memory,1+pointertosetinit+starttouscode,0x21A50
+pointertosetinit+=8
+}
 starttouscode=17
 poke memory,0+pointertosetinit+starttouscode,0xcd
 lpoke memory,1+pointertosetinit+starttouscode,0xD1A881
+if returntocas{
+poke memory,21+pointertosetinit,0xf3
+poke memory,22+pointertosetinit,0xc3
+lpoke memory,23+pointertosetinit,0x08D64D
+}else{
 poke memory,21+pointertosetinit,0xed
 poke memory,22+pointertosetinit,0x38
 poke memory,23+pointertosetinit,0xe6
+}
 
 exist bootromimg
 if strsize=-1{
@@ -503,6 +529,7 @@ strsize2=strsize
 sdim img4exec,strsize2
 exist dircmdlines:if strsize=-1{if bootromread=0{end}else{poke24 memory,1+0xD1A881,0x08D64D:poke memory,0xD1A881,0xc3/*bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}}else{
 bload dircmdlines,img4exec
+poke memory,0x08D64D,0xc3
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
 dupptr memorytimer,varptr(memory)+0xf20000,65536,2
