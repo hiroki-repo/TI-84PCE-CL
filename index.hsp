@@ -492,6 +492,8 @@ privillegedspacer=0xffffff,0xd1887c,0xd1887c,0
 oncmd gosub *getkeys_down,0x100
 oncmd gosub *getkeys_up,0x101
 
+poke memory,0xe20104,0xff
+
 dircmdlines=""+dir_cmdline
 
 repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(dircmdlines))}else{break}:loop
@@ -499,7 +501,7 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
-exist dircmdlines:if strsize=-1{if bootromread=0{end}else{bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}}else{
+exist dircmdlines:if strsize=-1{if bootromread=0{end}else{poke24 memory,1+0xD1A881,0x08D64D:poke memory,0xD1A881,0xc3/*bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}}else{
 bload dircmdlines,img4exec
 
 dupptr memory8000,varptr(memory)+0xd08000,128,2
@@ -1540,6 +1542,9 @@ case 3
 		swbreak
 		case 0x08
 		return 0x7f
+		swbreak
+		case 0x0f
+		return 0xfc|(peek(controlportpoll,argv(0)&0xFF)&0x3)
 		swbreak
 		case 0x1c
 		return 0x80
