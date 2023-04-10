@@ -229,7 +229,10 @@ lpoke memory,1+pointertosetinit+starttouscode,0x21A3C
 starttouscode=21
 poke memory,0+pointertosetinit+starttouscode,0xcd
 lpoke memory,1+pointertosetinit+starttouscode,0x21A50
-pointertosetinit+=8
+starttouscode=25
+poke memory,0+pointertosetinit+starttouscode,0xcd
+lpoke memory,1+pointertosetinit+starttouscode,0x20844
+pointertosetinit+=12
 }
 starttouscode=17
 poke memory,0+pointertosetinit+starttouscode,0xcd
@@ -571,8 +574,8 @@ wpoke memory,0x00D0268A,0xFFFF
 
 //wpoke memory,0x00E30018,(4<<1)|(1<<8)
 
-//lpoke memory,0xf00004,0x3011
-lpoke memory,0xf00004,4
+lpoke memory,0xf00004,0x3011
+//lpoke memory,0xf00004,4
 lpoke memory,0xf00008,4
 
 /*lpoke memory,0xf20000,0x01
@@ -632,9 +635,6 @@ lpoke memory,0xf10000,lpeek(memory,0xf10004)
 wpoke memory,0xf10008,0
 }
 if (peek(memory,0xf1000c)&1){
-if (peek(memory,0xf1000c)&2){
-cpu_reset
-}
 if (peek(memory,0xf10014)&1){
 lpoke memory,0xf10010,0
 poke memory,0xf10014,peek(memory,0xf10014)&0xFE
@@ -643,6 +643,7 @@ if lpeek(memory,0xf10000)!0{
 lpoke memory,0xf10000,lpeek(memory,0xf10000)-1
 poke memory,0xf10010,peek(memory,0xf10010)&0xFE
 }else{
+if (peek(memory,0xf1000c)&2){cpu_reset}
 if (peek(memory,0xf1000c)&4){cpu_nmi}
 lpoke memory,0xf10000,lpeek(memory,0xf10004)
 poke memory,0xf10010,peek(memory,0xf10010)|1
