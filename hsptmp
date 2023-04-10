@@ -531,7 +531,7 @@ repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(di
 exist dircmdlines
 strsize2=strsize
 sdim img4exec,strsize2
-exist dircmdlines:if strsize=-1{if bootromread=0{end}else{poke24 memory,1+0xD1A881,0x08D64D:poke memory,0xD1A881,0xc3/*bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}}else{
+exist dircmdlines:if strsize=-1{if bootromread=0{end}else{if dircmdlines=""{title "TIOS":poke24 memory,1+0xD1A881,0x08D64D:poke memory,0xD1A881,0xc3/*bload bootromimg,memory/*:memcpy memory,stubdata,0x6000,0xd00000,0:poke24 memory,1+0xD1A881,0x682/*0x08D64D*//*:poke memory,0xD1A881,0xc3:lpoke memory,0xea7,0xc3|(pointertosetinit<<8)*/}else{end}}}else{
 bload dircmdlines,img4exec
 poke memory,0x08D64D,0xc3
 
@@ -596,6 +596,12 @@ poke memory,0xe20082,0*/
 //poke memory,0xf30020,1
 
 flamecountp6=0
+
+lpoke memory,0xf00050,0x00010900
+lpoke memory,0xf1001c,0x00010602
+lpoke memory,0xf20038,0x00010801
+lpoke memory,0xf3003c,0x00010500
+lpoke memory,0xf00054,0x00002222
 
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
