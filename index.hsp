@@ -1226,6 +1226,8 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
+		poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp
 		swbreak
 		case 0x0020514//_InsertMem
 		detmp=(lpeek(memory,0xd80003)&0xFFFFFF)+(lpeek(memory,0xd80006)&0xFFFFFF)
