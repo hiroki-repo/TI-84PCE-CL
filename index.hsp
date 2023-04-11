@@ -173,7 +173,10 @@ gsel 0,0
 
 gosub *cpyvramtomem
 
+dim SYSTEM_POWER_STATUS, 3
+
 #uselib "Kernel32.dll"
+#func GetSystemPowerStatus "GetSystemPowerStatus" var
 #func GetEnvironmentVariableA "GetEnvironmentVariableA" str,var,int
 
 sdim usecastrueorfalse,64
@@ -429,9 +432,9 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 bootromread=1
 }
 
-batterycharging=1
+batterycharging=0
 batterystatus=0
-batterylevel=4
+batterylevel=0
 
 sdim controlportpoll,256
 
@@ -619,6 +622,9 @@ lpoke memory,0xf00054,0x00002222
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
 redraw 0
+GetSystemPowerStatus SYSTEM_POWER_STATUS
+batterycharging=peek(SYSTEM_POWER_STATUS(0),0)
+batterylevel=(peek(SYSTEM_POWER_STATUS(0),2)/25)
 //lpoke memory,0xf00000,lpeek(memory,0xf00000)&((-1)^lpeek(memory,0xf00008))
 //lpoke memory,0xf50008,0
 /*if ((lpeek(memory,0xf30020)&1)!0){
@@ -876,7 +882,7 @@ case 2
 			swbreak
 			case 9
 			batterystatus=((argv(1)&0x80)=0)*11
-			if batterylevel>=3{batterystatus=0}
+			if batterylevel=3{batterystatus=0}
 			swbreak
 			swend
 		swbreak
@@ -897,8 +903,9 @@ case 2
 		swbreak
 		case 0x09
 		poke controlportpoll,argv(0)&0xFF,argv(1)
-		batterystatus=(((argv(1)&128)=0)*3)
+		if batterystatus=1{batterystatus=(((argv(1)&128)=0)*3)
 		if batterylevel<0{batterystatus=0}
+		}
 		if argv(1)=0xd4{
 			poke controlportpoll,0,peek(controlportpoll,0)|(1<<6)
 		}
