@@ -816,7 +816,8 @@ argclbkfunc argv
 *RMKEARCH_internal
 switch argv(2)&3
 case 0
-if argv(0)=0xf30034 | (argv(0)>=0xf20034 & argv(0)<0xf20038) | (argv(0)>=0xe30028 & argv(0)<0xe3002c){argv(1)^=peek(memory,argv(0))}
+if (argv(0)>=0xe30028 & argv(0)<0xe3002c){argv(1)^=peek(memory,argv(0)):poke memory,argv(0)-4,peek(memory,argv(0)-4)&argv(1):poke memory,argv(0)-8,peek(memory,argv(0)-8)&argv(1)}
+if argv(0)=0xf30034 | (argv(0)>=0xf20034 & argv(0)<0xf20038){argv(1)^=peek(memory,argv(0))}
 if (argv(0)&0xFFFFFC)=0xf00000{return 0}
 if (argv(0)&0xFFFFFC)=0xf00008{lpoke memory,(argv(0)&0xFFFFFC),lpeek(memory,argv(0)&0xFFFFFC)&((argv(1)<<((argv(0)&3)*8))&lpeek(memory,0xf0000c)):return 0}
 //if (argv(0)&0xFFFFFC)=0xf00010{poke memory,argv(0),peek(memory,argv(0))&argv(1):return 0}
@@ -1892,10 +1893,27 @@ return 0
 
 *cpyvramfrommem
 //if ((lpeek(memory,0xf00004)&(1<<11))!0){
-lpoke memory,0xe30020,lpeek(memory,0xe30020)&((-1)^lpeek(memory,0xe30028))
-if (lpeek(memory,0xe3001c)&4)!0{lpoke memory,0xe30020,peek(memory,0xe30020)|4}
-if lpeek(memory,0xe30020)&lpeek(memory,0xe3001c){lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<11):if ((lpeek(memory,0xf00004)&(1<<11))!0){cpu_int rnd(256):clockcount+=cpu_execute()}}
-lpoke memory,0xe30028,0
+//lpoke memory,0xe30020,lpeek(memory,0xe30020)&((-1)^lpeek(memory,0xe30028))
+//if (lpeek(memory,0xe3001c)&4)!0{lpoke memory,0xe30020,peek(memory,0xe30020)|4}
+//if lpeek(memory,0xe30020)&lpeek(memory,0xe3001c){
+vraminteruuptmode=((lpeek(memory,0xe3001c)>>12)&3)
+switch vraminteruuptmode
+case 0
+case 3
+lpoke memory,0xe30020,peek(memory,0xe30020)|4
+lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<11):if ((lpeek(memory,0xf00004)&(1<<11))!0){cpu_int rnd(256):clockcount+=cpu_execute()}
+lpoke memory,0xe30024,lpeek(memory,0xe30020)&lpeek(memory,0xe3001c)
+swbreak
+case 2
+if (lpeek(memory,0xe3001c)>>11)&1{
+lpoke memory,0xe30020,peek(memory,0xe30020)|4
+lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<11):if ((lpeek(memory,0xf00004)&(1<<11))!0){cpu_int rnd(256):clockcount+=cpu_execute()}
+lpoke memory,0xe30024,lpeek(memory,0xe30020)&lpeek(memory,0xe3001c)
+}
+swbreak
+swend
+//}
+//lpoke memory,0xe30028,0
 //}
 //cpu_int rnd(256)
 lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
@@ -1924,7 +1942,6 @@ gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramtomem_16
 gsel gselbackup4cpyvram,0
-return
 swbreak
 case 1
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)/2
@@ -1946,7 +1963,6 @@ gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramtomem_16
 gsel gselbackup4cpyvram,0
-return
 swbreak
 case 2
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)/2
@@ -1966,7 +1982,6 @@ gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramtomem_16
 gsel gselbackup4cpyvram,0
-return
 swbreak
 case 3
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
@@ -1981,7 +1996,6 @@ gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)
 gsel gselbackup4cpyvram,0
 //gosub *cpyvramtomem_16
 gsel gselbackup4cpyvram,0
-return
 swbreak
 case 4
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
@@ -1994,7 +2008,18 @@ poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memo
 poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,((vraminfo>>(5*0))&31)*8
 loop
 loop
-return
+swbreak
+case 5
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+cnt2=cnt
+//cnt2=0
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
+vraminfo=peek24(memory,(lpeek(memory,0xE30010)&0xFFFFFF)+(cnt*3))
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+0,peek(vraminfo,((((lpeek(memory,0xe3001c)>>10)&1)^((lpeek(memory,0xe3001c)>>8)&1))!0)*2)
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+1,peek(vraminfo,1)
+poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,peek(vraminfo,((((lpeek(memory,0xe3001c)>>10)&1)^((lpeek(memory,0xe3001c)>>8)&1))=0)*2)
+loop
+loop
 swbreak
 case 6
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
@@ -2007,7 +2032,6 @@ poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memo
 poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,((vraminfo<<(1))&0x3e)*4
 loop
 loop
-return
 swbreak
 case 7
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
@@ -2020,9 +2044,14 @@ poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memo
 poke vram,(((((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1))+(cnt))*3)+2,((vraminfo>>(4*0))&15)*16
 loop
 loop
-return
 swbreak
 swend
+if vraminteruuptmode=1{
+lpoke memory,0xe30020,peek(memory,0xe30020)|4
+lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<11):if ((lpeek(memory,0xf00004)&(1<<11))!0){cpu_int rnd(256):clockcount+=cpu_execute()}
+lpoke memory,0xe30024,lpeek(memory,0xe30020)&lpeek(memory,0xe3001c)
+}
+
 return
 *cpyvramfrommem_16
 repeat ((lpeek(memory,0xe30004)&0x3FF)+1)
