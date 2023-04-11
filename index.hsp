@@ -1816,6 +1816,74 @@ return 0
 //cpu_int rnd(256)
 lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
 switch lcdbitlength
+case 0
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)/2
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/8
+poke vram_8bit,((cnt*8)+0)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>0)&0x1
+poke vram_8bit,((cnt*8)+1)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>1)&0x1
+poke vram_8bit,((cnt*8)+2)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>2)&0x1
+poke vram_8bit,((cnt*8)+3)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>3)&0x1
+poke vram_8bit,((cnt*8)+4)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>4)&0x1
+poke vram_8bit,((cnt*8)+5)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>5)&0x1
+poke vram_8bit,((cnt*8)+6)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>6)&0x1
+poke vram_8bit,((cnt*8)+7)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>7)&0x1
+loop
+//memcpy vram_8bit,memory,((lpeek(memory,0xe30004)&0x3FF)+1),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF)
+loop
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+gsel 1,0
+pos 0,0
+gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),2,0,0,((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramtomem_16
+gsel gselbackup4cpyvram,0
+return
+swbreak
+case 1
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)/2
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/4
+poke vram_8bit,((cnt*4)+0)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>0)&0x3
+poke vram_8bit,((cnt*4)+1)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>2)&0x3
+poke vram_8bit,((cnt*4)+2)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>4)&0x3
+poke vram_8bit,((cnt*4)+3)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>6)&0x3
+loop
+//memcpy vram_8bit,memory,((lpeek(memory,0xe30004)&0x3FF)+1),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF)
+loop
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+gsel 1,0
+pos 0,0
+gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),2,0,0,((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramtomem_16
+gsel gselbackup4cpyvram,0
+return
+swbreak
+case 2
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)/2
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/2
+poke vram_8bit,((cnt*2)+0)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>0)&0xF
+poke vram_8bit,((cnt*2)+1)+((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1),(peek(memory,cnt+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF))>>4)&0xF
+loop
+//memcpy vram_8bit,memory,((lpeek(memory,0xe30004)&0x3FF)+1),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF)
+loop
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+gsel 1,0
+pos 0,0
+gzoom ((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),2,0,0,((lpeek(memory,0xe30004)&0x3FF)+1),((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16),0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramtomem_16
+gsel gselbackup4cpyvram,0
+return
+swbreak
 case 3
 repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
 memcpy vram_8bit,memory,((lpeek(memory,0xe30004)&0x3FF)+1),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF)
@@ -1893,6 +1961,71 @@ lpoke memory,0xe30028,0
 }
 lcdbitlength=((wpeek(memory,0xe30018)>>1)&7)
 switch lcdbitlength
+case 0
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+pos 0,0
+gzoom (lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,1,0,0,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramfrommem_16
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/8
+poke memory,((cnt*8)+0)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>0)&0x1
+poke memory,((cnt*8)+1)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>1)&0x1
+poke memory,((cnt*8)+2)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>2)&0x1
+poke memory,((cnt*8)+3)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>3)&0x1
+poke memory,((cnt*8)+4)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>4)&0x1
+poke memory,((cnt*8)+5)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>5)&0x1
+poke memory,((cnt*8)+6)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>6)&0x1
+poke memory,((cnt*8)+7)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>7)&0x1
+loop
+memcpy memory,vram_8bit,((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1)
+loop
+gsel gselbackup4cpyvram,0
+return
+swbreak
+case 1
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+pos 0,0
+gzoom (lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,1,0,0,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramfrommem_16
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/4
+poke memory,((cnt*4)+0)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>0)&0x3
+poke memory,((cnt*4)+1)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>2)&0x3
+poke memory,((cnt*4)+2)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>4)&0x3
+poke memory,((cnt*4)+3)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>6)&0x3
+loop
+memcpy memory,vram_8bit,((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1)
+loop
+gsel gselbackup4cpyvram,0
+return
+swbreak
+case 2
+gselbackup4cpyvram=ginfo(3)
+gsel 2,0
+repeat 256:vraminfo=vramformattrans(wpeek(memory,0xe30200+(cnt*2))):palette cnt,((vraminfo>>(5*0))&31)*8,((vraminfo>>(5*1))&31)*8,((vraminfo>>(5*2))&31)*8,cnt=255:loop
+pos 0,0
+gzoom (lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,1,0,0,(lpeek(memory,0xe30004)&0x3FF)+1,(((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16,0
+gsel gselbackup4cpyvram,0
+//gosub *cpyvramfrommem_16
+repeat ((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)
+cnt2=cnt
+repeat ((lpeek(memory,0xe30004)&0x3FF)+1)/2
+poke memory,((cnt*2)+0)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>0)&0xF
+poke memory,((cnt*2)+1)+(cnt2*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),(peek(vram_8bit,((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt2)*((lpeek(memory,0xe30004)&0x3FF)+1)+cnt)>>4)&0xF
+loop
+memcpy memory,vram_8bit,((lpeek(memory,0xe30004)&0x3FF)+1),(cnt*((lpeek(memory,0xe30004)&0x3FF)+1))+(lpeek(memory,0xE30010)&0xFFFFFF),((((((lpeek(memory,0xe30000)&0xFF)>>2)+1)*16)-1)-cnt)*((lpeek(memory,0xe30004)&0x3FF)+1)
+loop
+gsel gselbackup4cpyvram,0
+return
+swbreak
 case 3
 gselbackup4cpyvram=ginfo(3)
 gsel 2,0
