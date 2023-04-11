@@ -447,8 +447,14 @@ dupptr lcdiomemory,varptr(memory)+0xe30000,0x1000,2
 
 fstmpptxp=0x290000
 fdtmpptxp=0x2c0000
+fstmpptxp=0xd90000
+//fdtmpptxp=0xdc0000
+fdtmpptxp=0xd13406
 
 fdntmpptxp=0xdc0000
+
+poke24 memory,0xD0259A,fdtmpptxp
+poke24 memory,0xD0259D,fstmpptxp
 
 fstmpptxpbase=lpeek(fstmpptxp,0)
 fdtmpptxpbase=lpeek(fdtmpptxp,0)
@@ -1169,6 +1175,9 @@ case 3
 		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
 		case 0x002050C//_ChkFindSym
+		fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)
+*accessofChkFindSym4aua
 		fname4readwrite="":fname4readwritebase_fp4fs=""
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,0x1000000,2
@@ -1206,6 +1215,10 @@ case 3
 			}
 		}
 
+		poke memory,0xd80000+0,strlen(fname4readwritebase)
+		poke memory,0xd80000+1,0
+		poke memory,0xd80000+2,0
+
 		poke memory,0xd80003+0,peek(detmp,0)
 		poke memory,0xd80003+1,peek(detmp,1)
 		poke memory,0xd80003+2,peek(detmp,2)
@@ -1224,6 +1237,8 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
+		poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp
 		swbreak
 		case 0x002051C//_EnoughMem
 		poke memory,0xd80009,peek(memory,0xd80009)&0xFE
@@ -1618,6 +1633,8 @@ case 3
 		case 0x0021330//_CreateAppVar
 		case 0x0021334//_CreateProtProg
 		case 0x0021338//_CreateVar
+		fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)
 		hltmp=__OP1Start
 		lpoke memory,fstmpptxp,(lpeek(memory,0xd80006)&0xFFFFFF)
 		fstmpptxp+=3
@@ -1632,11 +1649,21 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
+		poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp
 		swbreak
 		case 0x0021448//_Arc_Unarc
+		fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)
+		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
 		dupptr dataname,varptr(memory)+__OP1Start+1,8,2
 		datasize=(lpeek(memory,0xD0257B)&0xFFFFFF)//(lpeek(memory,0xd80006)&0xFFFFFF)
-		if (lpeek(memory,0xd80003)&0xFFFFFF)>=0xd00000{
+		fdtmpptxp4e=0
+		fileid4target=-1
+		repeat fileidmaxed:if filedb_str(cnt)=fname4readwritebase{fileid4target=cnt:fdtmpptxp4e=filedb_ptr(cnt):break}:loop
+		datasize=0
+		if fileid4target!-1{datasize=filedb_siz(fileid4target)}
+		if (fdtmpptxp4e&0xFFFFFF)>=0xd00000 & datasize!0{
 		sdim data4created,datasize+78
 		sdim data4created,0x4a+datasize+2
 		wpoke data4created,0,0x2a2a
@@ -1673,6 +1700,7 @@ case 3
 		fdtmpptxp+=datasize+2
 		}
 		}else{
+		goto *accessofChkFindSym4aua
 		//memcpy memory,memory,datasize+2,fdntmpptxp,(lpeek(memory,0xd80003)&0xFFFFFF)
 		fileid4target=-1
 		repeat fileidmaxed:if filedb_str(cnt)=dataname{fileid4target=cnt:break}:loop
@@ -1693,6 +1721,8 @@ case 3
 		}
 
 		}
+		poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp
 		swbreak
 		default
 		logmes "Unimplemented syscall("+strf("%06X",syscallnumber)+") occurred"
