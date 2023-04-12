@@ -146,8 +146,10 @@ endflagofprogram=0
 
 #ifdef _debug
 bootromimg=""+dir_cur+"\\firmware.bin"
+bootromimg_upd=""+dir_cur+"\\update.8eu"
 #else
 bootromimg=""+dir_exe+"\\firmware.bin"
+bootromimg_upd=""+dir_exe+"\\update.8eu"
 #endif
 
 sdim memory,0x1000000
@@ -189,6 +191,8 @@ if strsize=-1{
 pointertosetinit=0
 }else{
 pointertosetinit=0x500000
+/*exist bootromimg_upd
+if strsize=-1{
 poke memory,0+pointertosetinit,0xed
 poke memory,1+pointertosetinit,0x7d
 poke memory,2+pointertosetinit,0x21
@@ -204,6 +208,23 @@ poke memory,17+pointertosetinit,0x21
 lpoke memory,18+pointertosetinit,0xd00080
 poke memory,0xd00080+0x1b,64
 pointertosetinit+=21
+}else{*/
+poke memory,0+pointertosetinit,0xed
+poke memory,1+pointertosetinit,0x7d
+poke memory,2+pointertosetinit,0x21
+lpoke memory,3+pointertosetinit,0x000e4f
+poke memory,6+pointertosetinit,0x22
+lpoke memory,7+pointertosetinit,0x05
+poke memory,10+pointertosetinit,0x3e
+poke memory,11+pointertosetinit,0xc3
+poke memory,12+pointertosetinit,0x32
+lpoke memory,13+pointertosetinit,0x04
+poke memory,16+pointertosetinit,0xfd
+poke memory,17+pointertosetinit,0x21
+lpoke memory,18+pointertosetinit,0xd00080
+poke memory,0xd00080+0x1b,64
+pointertosetinit+=21
+//}
 poke memory,0xD00589,1
 if usecastrueorfalse="true"{returntocas=1}else{
 returntocas=int(usecastrueorfalse)
@@ -348,6 +369,14 @@ bootromread=0
 exist bootromimg
 if strsize!-1{
 bload bootromimg,memory
+exist bootromimg_upd
+strsizeforupd=strsize
+if strsizeforupd!-1{
+sdim updatefortmp,strsizeforupd
+bload bootromimg_upd,updatefortmp
+memcpy memory,updatefortmp,lpeek(updatefortmp,0x4a),0x20000,0x4e
+sdim updatefortmp,64
+}
 /*//LibC uses HLE
 ptr4ovwrite=0x0009C
 poke memory,0+ptr4ovwrite,0xcd
@@ -591,7 +620,12 @@ if bootromread=1{
 //lpoke memory,0xd0fffc,0xc3|(0xd0000<<8)
 //lpoke memory,0xD10913,0xc3|(pointertosetinit<<8)
 //poke24 memory,0xD1A87E,pointertosetinit
+/*exist bootromimg_upd
+if strsize=-1{
 lpoke memory,0xea7,0xc3|(pointertosetinit<<8)
+}else{*/
+lpoke memory,0x4,0xc3|(pointertosetinit<<8)
+//}
 //poke24 memory,0xD,pointertosetinit
 memcpy memory,stubdata,0x500,0xd00000,0
 //memset memory,0,0xd005f8,0xB
@@ -645,7 +679,7 @@ repeat
 redraw 0
 GetSystemPowerStatus SYSTEM_POWER_STATUS
 batterycharging=peek(SYSTEM_POWER_STATUS(0),0)
-batterylevel=(peek(SYSTEM_POWER_STATUS(0),2)/25)
+batterylevel=(peek(SYSTEM_POWER_STATUS(0),2)/20)
 //lpoke memory,0xf00000,lpeek(memory,0xf00000)&((-1)^lpeek(memory,0xf00008))
 //lpoke memory,0xf50008,0
 /*if ((lpeek(memory,0xf30020)&1)!0){
@@ -1827,7 +1861,7 @@ case 3
 	case 0x0
 		switch (argv(0)&0xFF)
 		case 0x02
-		return batterystatus|128
+		return batterystatus|128|64
 		swbreak
 		case 0x03
 		return 0
