@@ -152,6 +152,10 @@ bootromimg=""+dir_exe+"\\firmware.bin"
 bootromimg_upd=""+dir_exe+"\\update.8eu"
 #endif
 
+dircmdlines=""+dir_cmdline
+
+repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(dircmdlines))}else{break}:loop
+
 sdim memory,0x1000000
 lpoke memory,0xE30010,0xd40000
 
@@ -408,6 +412,17 @@ lpoke memory,peek24(memory,0x20d8d)-4,(0x20d8c<<8)|0xc3
 //lpoke memory,peek24(memory,0x20d8d),(0x20d8c<<8)|0xc3
 lpoke memory,peek24(memory,0x21d3d),(0x21d3c<<8)|0xc3
 
+if dircmdlines=""{
+ptr4ovwrite=0x2014c//Key related
+poke memory,0+ptr4ovwrite,0xcd
+lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+ptr4ovwrite=0x20d8c//Key related
+poke memory,0+ptr4ovwrite,0xcd
+lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+ptr4ovwrite=0x21d3c//Key related
+poke memory,0+ptr4ovwrite,0xcd
+lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+}else{
 ptr4ovwrite=0x2014c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
@@ -475,6 +490,7 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x207f0
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+}
 
 bootromread=1
 }
@@ -522,6 +538,10 @@ dim filedb_siz,filemaxread
 
 dim keyseed,256*2
 
+keyseed(112)=0x35,0x34,0x33,0x32,0x31
+keyseed(36)=0x1f
+keyseed(93)=0x27
+keyseed(46)=0x38
 keyseed(8)=0x0f
 keyseed(37)=0x02,0x04,0x03,0x01
 keyseed(' ')=0x20
@@ -595,10 +615,6 @@ oncmd gosub *getkeys_down,0x100
 oncmd gosub *getkeys_up,0x101
 
 poke memory,0xe20104,0xff
-
-dircmdlines=""+dir_cmdline
-
-repeat:if strmid(dircmdlines,0,1)=" "{dircmdlines=strmid(dircmdlines,1,strlen(dircmdlines))}else{break}:loop
 
 exist dircmdlines
 strsize2=strsize
