@@ -837,7 +837,13 @@ holdday=0
 //await 1
 }
 if endflagofprogram!0{end}
-await:loop
+await
+if (peek(memory,0xf50000)&3)>=1{
+poke memory,0xf5001e-(((keycode4ret4setks-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret4setks-1)/8)*2))|(1<<((keycode4ret4setks-1)\8))
+keycode4ret4setks=0
+if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
+}
+loop
 stop
 
 *pagehandler
@@ -2230,6 +2236,7 @@ return
 *getkeys_down
 wparam2x=wparam:if wparam2x=16{shifted=1}else{pressedkey=1
 keycode4ret=keyseed(wparam2x|((shifted!0)*256))
+keycode4ret4setks=keycode4ret|0x100
 if (wparam2x>='A' & wparam2x<='Z') | (shifted!0 & (wparam2x=189 | wparam2x=226)) | (shifted=0 & (wparam2x=186)){traccode=1}
 if (wparam2x=219 | wparam2x=221){traccode=2}
 }
@@ -2258,7 +2265,7 @@ if (peek(memory,0xf50000)&3)!1 & (peek(memory,0xf50004)<((keyseed(wparam4kup|((s
 poke memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2),peek(memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2))&((-1)-(1<<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)))
 }
 if (peek(memory,0xf50000)&3)>=2{
-if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
+//if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
 }
 if ((peek(memory,0xf5000C)&peek(memory,0xf50008))!0){lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
 if ((lpeek(memory,0xf00004)&(1<<10))!0){
