@@ -403,6 +403,11 @@ ptr4ovwrite=0x540000
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 
+lpoke memory,peek24(memory,0x2014d),(0x2014c<<8)|0xc3
+lpoke memory,peek24(memory,0x20d8d)-4,(0x20d8c<<8)|0xc3
+//lpoke memory,peek24(memory,0x20d8d),(0x20d8c<<8)|0xc3
+lpoke memory,peek24(memory,0x21d3d),(0x21d3c<<8)|0xc3
+
 ptr4ovwrite=0x2014c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
@@ -479,7 +484,8 @@ batterystatus=0
 batterylevel=0
 
 sdim controlportpoll,256
-poke controlportpoll,0,0xf
+//poke controlportpoll,0,0xf
+poke controlportpoll,0xf,0x2
 
 op_stack=0xdf0000
 poke memory,(0x0D00429+3)+0,peek(op_stack,0)
@@ -565,6 +571,7 @@ repeat 4096:memptrtmp(cnt)=varptr(memory)+cnt*4096:loop
 memptrtmp(0xe10)=0
 memptrtmp(0xf20)=0
 memptrtmp(0xf30)=0
+memptrtmp(0xf50)=0
 memaccessptrset varptr(memptrtmp),4096//16777216
 //repeat 12:memptrtmp(cnt+3392)=varptr(vram48bt)+(cnt*4096):loop
 
@@ -839,7 +846,7 @@ holdday=0
 if endflagofprogram!0{end}
 await
 if (peek(memory,0xf50000)&3)>=1{
-poke memory,0xf5001e-(((keycode4ret4setks-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret4setks-1)/8)*2))|(1<<((keycode4ret4setks-1)\8))
+//poke memory,0xf5001e-(((keycode4ret4setks-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret4setks-1)/8)*2))|(1<<((keycode4ret4setks-1)\8))
 keycode4ret4setks=0
 if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
 }
@@ -858,6 +865,7 @@ switch argv(2)&3
 case 0
 if (argv(0)>=0xe30028 & argv(0)<0xe3002c){argv(1)^=peek(memory,argv(0)):poke memory,argv(0)-4,peek(memory,argv(0)-4)&argv(1):poke memory,argv(0)-8,peek(memory,argv(0)-8)&argv(1)}
 if argv(0)=0xf30034 | (argv(0)>=0xf20034 & argv(0)<0xf20038){argv(1)^=peek(memory,argv(0))}
+if (argv(0)>=0xf50008 & argv(0)<0xf5000c) | (argv(0)>=0xf50044 & argv(0)<0xf50048){argv(1)&=(0xFF-peek(memory,argv(0)))|(128*(argv(0)=0xf50008))}
 if (argv(0)&0xFFFFFC)=0xf00000{return 0}
 if (argv(0)&0xFFFFFC)=0xf00008{lpoke memory,(argv(0)&0xFFFFFC),lpeek(memory,argv(0)&0xFFFFFC)&((argv(1)<<((argv(0)&3)*8))&lpeek(memory,0xf0000c)):return 0}
 //if (argv(0)&0xFFFFFC)=0xf00010{poke memory,argv(0),peek(memory,argv(0))&argv(1):return 0}
@@ -956,6 +964,7 @@ case 2
 	case 0x0
 		switch (argv(0)&0xFF)
 		case 0x00
+		if (argv(1)&(1<<4)){cpu_crash}
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x93
 			switch batterystatus
 			case 3
@@ -981,6 +990,7 @@ case 2
 		cpu_set_speed (6000000/6000/5)*(1<<(argv(1)&3))
 		swbreak
 		case 0x05
+		if ((peek(controlportpoll,argv(0)&0xFF)&(1<<6))!0) & ((argv(1)&(1<<6))=0){cpu_crash}
 		poke controlportpoll,argv(0)&0xFF,argv(1)&0x1f
 		swbreak
 		case 0x06
@@ -999,6 +1009,7 @@ case 2
 		}
 		if argv(1)=0xd4{
 			poke controlportpoll,0,peek(controlportpoll,0)|(1<<6)
+			cpu_crash
 		}
 		swbreak
 		case 0x0a
@@ -1040,6 +1051,9 @@ case 2
 		case 0x3B
 		case 0x3C
 		poke privillegedspacer(3),(argv(0)-0x3A)&3,argv(1)
+		swbreak
+		case 0x3E
+		poke controlportpoll,0x3d,peek(controlportpoll,0x3d)&((-1)-argv(1))
 		swbreak
 		default
 		poke controlportpoll,argv(0)&0xFF,argv(1)
@@ -1867,7 +1881,7 @@ case 3
 	case 0x0
 		switch (argv(0)&0xFF)
 		case 0x02
-		return batterystatus|128//|64
+		return batterystatus|128|64
 		swbreak
 		case 0x03
 		return 0
@@ -1879,7 +1893,7 @@ case 3
 		return peek(controlportpoll,argv(0)&0xFF)|((batterycharging!0)<<1)
 		swbreak
 		case 0x0f
-		return 0xfc|(peek(controlportpoll,argv(0)&0xFF)&0x3)
+		return (peek(controlportpoll,argv(0)&0xFF)&0x3)
 		swbreak
 		case 0x1c
 		return 0x80
@@ -2236,17 +2250,19 @@ return
 *getkeys_down
 wparam2x=wparam:if wparam2x=16{shifted=1}else{pressedkey=1
 keycode4ret=keyseed(wparam2x|((shifted!0)*256))
+*keyset4resetact
 keycode4ret4setks=keycode4ret|0x100
 if (wparam2x>='A' & wparam2x<='Z') | (shifted!0 & (wparam2x=189 | wparam2x=226)) | (shifted=0 & (wparam2x=186)){traccode=1}
 if (wparam2x=219 | wparam2x=221){traccode=2}
 }
 if (peek(memory,0xf50000)&3)=1{lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
 if ((lpeek(memory,0xf00004)&(1<<10))!0) & (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,peek(memory,0xf50008)|4:lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):cpu_int rnd(256):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10):clockcount+=cpu_execute()}
-if (peek(memory,0xf50000)&3)!1 & (peek(memory,0xf50004)<(7-((keycode4ret-1)/8))) & (peek(memory,0xf50005)<=((keycode4ret-1)\8)){
+if (peek(memory,0xf50000)&3)!0 & (peek(memory,0xf50004)<(7-((keycode4ret-1)/8))) & (peek(memory,0xf50005)<=((keycode4ret-1)\8)){
 keypaddatabak=peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))
 poke memory,0xf5001e-(((keycode4ret-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))|(1<<((keycode4ret-1)\8))
 if ((lpeek(memory,0xf00004)&(1<<10))!0) & (keypaddatabak!peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))){
 poke memory,0xf50008,(peek(memory,0xf50008)|2)&peek(memory,0xf5000C)
+if (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,(peek(memory,0xf50008)|4)&peek(memory,0xf5000C)}
 if ((peek(memory,0xf5000C)&peek(memory,0xf50008))!0){lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
 if ((peek(memory,0xf5000C)&peek(memory,0xf50008))!0) & ((lpeek(memory,0xf00004)&(1<<10))!0){lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):cpu_int rnd(256):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10):clockcount+=cpu_execute()}
 }
@@ -2261,7 +2277,7 @@ return
 
 *getkeys_up
 wparam4kup=wparam
-if (peek(memory,0xf50000)&3)!1 & (peek(memory,0xf50004)<(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))) & (peek(memory,0xf50005)<=((keyseed(wparam4kup|((shifted!0)*256))-1)\8)){
+if (peek(memory,0xf50000)&3)!0 & (peek(memory,0xf50004)<(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))) & (peek(memory,0xf50005)<=((keyseed(wparam4kup|((shifted!0)*256))-1)\8)){
 poke memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2),peek(memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2))&((-1)-(1<<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)))
 }
 if (peek(memory,0xf50000)&3)>=2{
