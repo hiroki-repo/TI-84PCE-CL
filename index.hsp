@@ -407,10 +407,12 @@ ptr4ovwrite=0x540000
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 
+if peek(memory,0x2014c)=0xc3{
 lpoke memory,peek24(memory,0x2014d),(0x2014c<<8)|0xc3
 lpoke memory,peek24(memory,0x20d8d)-4,(0x20d8c<<8)|0xc3
 //lpoke memory,peek24(memory,0x20d8d),(0x20d8c<<8)|0xc3
 lpoke memory,peek24(memory,0x21d3d),(0x21d3c<<8)|0xc3
+}
 
 if dircmdlines=""{
 ptr4ovwrite=0x2014c//Key related
