@@ -2275,7 +2275,7 @@ if (wparam2x=219 | wparam2x=221){traccode=2}
 }
 if (peek(memory,0xf50000)&3)=1{lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
 if ((lpeek(memory,0xf00004)&(1<<10))!0) & (peek(memory,0xf50000)&3)=1{poke memory,0xf50008,peek(memory,0xf50008)|4:lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):cpu_int rnd(256):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10):clockcount+=cpu_execute()}
-if (peek(memory,0xf50000)&3)!0 & (peek(memory,0xf50004)<(7-((keycode4ret-1)/8))) & (peek(memory,0xf50005)<=((keycode4ret-1)\8)){
+if /*(peek(memory,0xf50000)&3)!0 & */(peek(memory,0xf50004)<(7-((keycode4ret-1)/8))) & (peek(memory,0xf50005)<=((keycode4ret-1)\8)){
 keypaddatabak=peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))
 poke memory,0xf5001e-(((keycode4ret-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))|(1<<((keycode4ret-1)\8))
 if ((lpeek(memory,0xf00004)&(1<<10))!0) & (keypaddatabak!peek(memory,0xf5001e-(((keycode4ret-1)/8)*2))){
@@ -2295,7 +2295,7 @@ return
 
 *getkeys_up
 wparam4kup=wparam
-if (peek(memory,0xf50000)&3)!0 & (peek(memory,0xf50004)<(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))) & (peek(memory,0xf50005)<=((keyseed(wparam4kup|((shifted!0)*256))-1)\8)){
+if /*(peek(memory,0xf50000)&3)!0 & */(peek(memory,0xf50004)<(7-((keyseed(wparam4kup|((shifted!0)*256))-1)/8))) & (peek(memory,0xf50005)<=((keyseed(wparam4kup|((shifted!0)*256))-1)\8)){
 poke memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2),peek(memory,0xf5001e-(((keyseed(wparam4kup|((shifted!0)*256))-1)/8)*2))&((-1)-(1<<((keyseed(wparam4kup|((shifted!0)*256))-1)\8)))
 }
 if (peek(memory,0xf50000)&3)>=2{
