@@ -114,6 +114,7 @@ case 0x7b
 return "Asm"
 swbreak
 swend
+if wpeek(prm_0,0x4e)==0x0f81{return "App"}
 return "Unk"
 
 #defcfunc vramformattrans int prm_0
@@ -124,7 +125,14 @@ return prm_0x
 
 #deffunc SetTitleFromPrgm var prm_0
 sdim titlename4show,64
+switch GetTI84PCEPrgmType(prm_0)
+case "Asm"
 memcpy titlename4show,prm_0,8,0,0x3c
+swbreak
+case "App"
+memcpy titlename4show,prm_0,8,0,0x11
+swbreak
+swend
 title titlename4show
 return
 
@@ -135,6 +143,13 @@ poke prm_0,prm_1+0,(prm_2>>(8*0))&0xFF
 poke prm_0,prm_1+1,(prm_2>>(8*1))&0xFF
 poke prm_0,prm_1+2,(prm_2>>(8*2))&0xFF
 return
+
+#defcfunc relocatet84pceapp var prm_0,int prm_1,int prm_2
+relocsize=peek24(prm_0,prm_1+0x100+0x12)
+repeat (relocsize-0x12a)/6
+poke24 prm_0,(prm_2+peek24(prm_0,prm_1+0x100+0x2a+(6*cnt))+relocsize+0x100)&0xFFFFFF,(prm_2+peek24(prm_0,prm_1+0x100+0x2a+3+(6*cnt))+relocsize+0x100)&0xFFFFFF
+loop
+return (prm_2+relocsize+0x100)
 
 #global
 
@@ -629,11 +644,16 @@ poke memory,0x08D64D,0xc3
 dupptr memory8000,varptr(memory)+0xd08000,128,2
 dupptr memorytimer,varptr(memory)+0xf20000,65536,2
 
-if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)!"Asm"{end}
+if IsTI84PCEPrgm(img4exec)=0 | GetTI84PCEPrgmType(img4exec)="Unk"{end}
+
+if GetTI84PCEPrgmType(img4exec)="App"{memcpy memory,img4exec,varsize(img4exec)-0x50,0x600000,0x4e:lpoke memory,0xD1A881,0xc3|((relocatet84pceapp(memory,0x600000,0x600000)&0xFFFFFF)<<8)}
+dupptr ti84appmemory,varptr(memory)+0x600000+0x4654,0x1000,2
 
 SetTitleFromPrgm img4exec
 
+if GetTI84PCEPrgmType(img4exec)!"App"{
 memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
+}
 
 //memcpy memory,img4exec,varsize(img4exec)-74,fdtmpptxp,74
 //fdtmpptxp+=varsize(img4exec)-74
