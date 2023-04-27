@@ -241,8 +241,33 @@ lpoke memory,13+pointertosetinit,0x04
 poke memory,16+pointertosetinit,0xfd
 poke memory,17+pointertosetinit,0x21
 lpoke memory,18+pointertosetinit,0xd00080
+poke memory,21+pointertosetinit,0xdd
+poke memory,22+pointertosetinit,0x21
+lpoke memory,23+pointertosetinit,0xd005e2
 poke memory,0xd00080+0x1b,64
-pointertosetinit+=21
+poke memory,0xd00000,0xcc
+lpoke memory,0xd00080,0x01142000
+lpoke memory,0xd00084,0x00000200
+lpoke memory,0xd00088,0x2020080c
+lpoke memory,0xd0008c,0x00000020
+lpoke memory,0xd00090,0x40002000
+lpoke memory,0xd00094,0x02010080
+lpoke memory,0xd0009c,0x0008c000
+lpoke memory,0xd000a0,0x0a000006
+lpoke memory,0xd000a4,0x00010000
+lpoke memory,0xd000a8,0x00000050
+lpoke memory,0xd000c0,0x06000000
+lpoke memory,0xd000c4,0x8002002a
+lpoke memory,0xd000c8,0x04414000
+lpoke memory,0xd000cc,0x00000200
+lpoke memory,0xd000d8,0x00004000
+/*poke24 memory,0xD0053F,0xD1A87E+3
+poke24 memory,0xD007FA,peek24(memory,0xD0053F)
+poke24 memory,0xD008E0,peek24(memory,0xD0053F)
+poke24 memory,0xD02706,peek24(memory,0xD0053F)
+poke24 memory,peek24(memory,0xD0053F),pointertosetinit+27//0xD1A87E*/
+pointertosetinit+=26
+lpoke memory,0xD007CA,0xD1A881
 //}
 poke memory,0xD00589,1
 if usecastrueorfalse="true"{returntocas=1}else{
@@ -282,7 +307,11 @@ lpoke memory,1+pointertosetinit+starttouscode,0x540000
 starttouscode=33
 poke memory,0+pointertosetinit+starttouscode,0xcd
 lpoke memory,1+pointertosetinit+starttouscode,0x20844
-pointertosetinit+=20
+starttouscode=37
+lpoke memory,pointertosetinit+starttouscode,0x21|(0x3011<<8)
+starttouscode=41
+lpoke memory,pointertosetinit+starttouscode,0x22|(0xf00004<<8)
+pointertosetinit+=28
 }
 starttouscode=17
 poke memory,0+pointertosetinit+starttouscode,0xcd
@@ -607,6 +636,8 @@ makeclbkfunc cpagehandler, 1, *pagehandler,1
 dim memptrtmp,4096//1048576
 repeat 4096:memptrtmp(cnt)=varptr(memory)+cnt*4096:loop
 memptrtmp(0xe10)=0
+memptrtmp(0xe30)=0
+memptrtmp(0xf00)=0
 memptrtmp(0xf20)=0
 memptrtmp(0xf30)=0
 memptrtmp(0xf50)=0
@@ -700,7 +731,35 @@ lpoke memory,0xf00004,0x300F
 lpoke memory,0xf00008,0
 lpoke memory,0xf0000C,0x19
 lpoke memory,0xf00020,0x8000
+//lpoke memory,0xf00000,0x8010
 lpoke memory,0xf00050,0x16160001
+
+poke memory,0xe00000,0x01
+poke memory,0xe00001,0x00
+poke memory,0xe00002,0x06
+poke memory,0xe00003,0x00
+poke memory,0xe00004,0x00
+poke memory,0xe00005,0x00
+poke memory,0xe00006,0x00
+poke memory,0xe00007,0xff
+poke memory,0xe00008,0x00
+poke memory,0xe00009,0x00
+
+lpoke memory,0xe0082c,0xffc00000
+
+lpoke memory,0xf80000,0x182b
+lpoke memory,0xf80004,0x2000b
+lpoke memory,0xf80008,0x10c
+lpoke memory,0xf8000c,0x2
+lpoke memory,0xf80010,0x21
+lpoke memory,0xf8001c,0x0e0f0f1f
+lpoke memory,0xf80060,0x12100
+lpoke memory,0xf80064,0x0e0f0f1f
+
+lpoke memory,0xf30020,0x95
+lpoke memory,0xf30030,0x1587
+lpoke memory,0xf30034,0x10
+lpoke memory,0xf3003c,0x010500
 
 }
 
@@ -718,7 +777,11 @@ wpoke memory,0xf00054,0x1616
 lpoke memory,0xf1001c,0x00010602
 lpoke memory,0xf20038,0x00010801
 lpoke memory,0xf3003c,0x00010500
+lpoke memory,0xf80060,0x12100
+lpoke memory,0xf80064,0x0e0f0f1f
 //lpoke memory,0xf00054,0x00002222
+
+oncesnap=0
 
 vramszbakxy(0)=lpeek(memory,0xe30004),lpeek(memory,0xe30000)
 repeat
@@ -767,7 +830,7 @@ poke memory,0xf10010,peek(memory,0xf10010)|1
 lpoke memory,0xf00014,lpeek(memory,0xf00000)&lpeek(memory,0xf00004)
 clockcount+=cpu_execute()
 if (cnt\(5-(peek(controlportpoll,0)&3)))=0{
-if ((lpeek(memory,0xf00004)&(1<<4))!0){
+if ((lpeek(memory,0xf00004)&(1<<4))!0) & ((lpeek(memory,0xf00000)&(1<<4))=0){
 cpu_int rnd(256)
 }
 lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c)
@@ -889,6 +952,10 @@ if (peek(memory,0xf50000)&3)>=1{
 keycode4ret4setks=0
 if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
 }
+if (oncesnap=1 & (lpeek(ez80_reg,0x30)>=0x08d6f8 & lpeek(ez80_reg,0x30)<=0x100000)){
+bsave "memory.dump",memory
+oncesnap=0
+}
 loop
 stop
 
@@ -900,11 +967,13 @@ return 1
 *RMKEARCH
 argclbkfunc argv
 *RMKEARCH_internal
+//if (argv(0)&0xFFF000)=0xf00000 & (peek(memory,0xf00000)&0x16)!0{logmes strf("%08X",argv(0))+":"+strf("%08X",lpeek(ez80_reg,0x30))}
 switch argv(2)&3
 case 0
 if (argv(0)>=0xe30028 & argv(0)<0xe3002c){argv(1)^=peek(memory,argv(0)):poke memory,argv(0)-4,peek(memory,argv(0)-4)&argv(1):poke memory,argv(0)-8,peek(memory,argv(0)-8)&argv(1)}
 if argv(0)=0xf30034 | (argv(0)>=0xf20034 & argv(0)<0xf20038){argv(1)^=peek(memory,argv(0))}
 if (argv(0)>=0xf50008 & argv(0)<0xf5000c) | (argv(0)>=0xf50044 & argv(0)<0xf50048){argv(1)&=(0xFF-peek(memory,argv(0)))|(128*(argv(0)=0xf50008))}
+//if (argv(0)&0xFFFFFC)=0xf00008{argv(1)&=(0xFF-peek(memory,argv(0)-8))}
 if (argv(0)&0xFFFFFC)=0xf00000{return 0}
 if (argv(0)&0xFFFFFC)=0xf00008{lpoke memory,(argv(0)&0xFFFFFC),lpeek(memory,argv(0)&0xFFFFFC)&((argv(1)<<((argv(0)&3)*8))&lpeek(memory,0xf0000c)):return 0}
 //if (argv(0)&0xFFFFFC)=0xf00010{poke memory,argv(0),peek(memory,argv(0))&argv(1):return 0}
@@ -914,7 +983,7 @@ if ((peek(controlportpoll,0x06)&4)!0){
 }else{
 	return 0
 }
-if argv(0)=0 & ((peek(controlportpoll,0x28)&(3<<2))!0){
+if (argv(0)&0xFFF)=0 & ((peek(controlportpoll,0x28)&(3<<2))!0){
 	if ((argv(1)&0x10)!0){
 		memset sha256state,0,32,0
 	}else{
@@ -962,8 +1031,8 @@ if argv(0)=0 & ((peek(controlportpoll,0x28)&(3<<2))!0){
 	}
 	}
 }else{
-	if argv(0)>=0x10 & argv(0)<0x50{
-		poke sha256block,argv(0)-0x10,argv(1)
+	if (argv(0)&0xFFF)>=0x10 & (argv(0)&0xFFF)<0x50{
+		poke sha256block,(argv(0)&0xFFF)-0x10,argv(1)
 	}
 }
 return 0
