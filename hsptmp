@@ -400,6 +400,12 @@ repeat 34910
 poke memory,0+(cnt*4)+0x84,0xcd
 lpoke memory,1+(cnt*4)+0x84,pcodeoftrc
 loop
+
+lpoke memory,0x410000,0xa7e838ed
+poke memory,0x410004,0x28
+poke memory,0x410005,-6
+poke memory,0x410006,0xc9
+
 bootromread=0
 exist bootromimg
 if strsize!-1{
@@ -449,9 +455,12 @@ if dircmdlines=""{
 ptr4ovwrite=0x2014c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
-ptr4ovwrite=0x20d8c//Key related
+/*ptr4ovwrite=0x20d8c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+ptr4ovwrite=0x20d8c//Key related
+poke memory,0+ptr4ovwrite,0xc3
+lpoke memory,1+ptr4ovwrite,0x410000/**/
 ptr4ovwrite=0x21d3c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
@@ -489,9 +498,12 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x20810
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
-ptr4ovwrite=0x20d8c//Key related
+/*ptr4ovwrite=0x20d8c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+ptr4ovwrite=0x20d8c//Key related
+poke memory,0+ptr4ovwrite,0xc3
+lpoke memory,1+ptr4ovwrite,0x410000/**/
 ptr4ovwrite=0x21330
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
@@ -959,6 +971,8 @@ await
 if (peek(memory,0xf50000)&3)>=1{
 //poke memory,0xf5001e-(((keycode4ret4setks-1)/8)*2),peek(memory,0xf5001e-(((keycode4ret4setks-1)/8)*2))|(1<<((keycode4ret4setks-1)\8))
 poke memory,0xf50008,peek(memory,0xf50008)|1
+if ((peek(memory,0xf5000C)&peek(memory,0xf50008))!0){lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10)}
+if ((peek(memory,0xf5000C)&peek(memory,0xf50008))!0) & ((lpeek(memory,0xf00004)&(1<<10))!0){/*lpoke memory,0xf00000,lpeek(memory,0xf00000)&lpeek(memory,0xf0000c):*/cpu_int rnd(256):lpoke memory,0xf00000,lpeek(memory,0xf00000)|(1<<10):lpoke memory,0xf0000c,lpeek(memory,0xf00000)&lpeek(memory,0xf00004):clockcount+=cpu_execute()}
 keycode4ret4setks=0
 if (peek(memory,0xf50000)&3)=2{poke memory,0xf50000,peek(memory,0xf50000)&0xFC}
 }
@@ -1730,6 +1744,7 @@ case 3
 		case 0x0020D8C//_GetKey
 		repeat:if (pressedkey=1){break}:await:loop
 		poke memory,0xd8000a,keycode4ret
+		//if pressedkey=1{poke memory,0xd8000a,keycode4ret}else{poke memory,0xd8000a,0}
 		pressedkey=0
 		keycode4ret=0
 		swbreak
@@ -2031,6 +2046,9 @@ case 3
 		fdntmpptxp=0xdc0000
 		poke24 memory,0xD0259A,fdtmpptxp
 		poke24 memory,0xD0259D,fstmpptxp
+	swbreak
+	case 0xe8
+		if pressedkey=1{ret=((pressedkey=1)*(keycode4ret)):keycode4ret=0:pressedkey=0}else{ret=0}:return ret
 	swbreak
 	default
 	if ((lpeek(eZ80_reg,0x34)<=privillegedspacer(0)) | (lpeek(eZ80_reg,0x34)>=privillegedspacer(1) & lpeek(eZ80_reg,0x34)<=privillegedspacer(2))){
