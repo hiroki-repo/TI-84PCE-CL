@@ -2587,7 +2587,7 @@ ti84bootstat(12288)=0x00000000,0x00000000,0x00000000,0x00000000,0x00000000,0x000
 /*lpoke memory,0xf00000,0
 lpoke memory,0xf50008,0*/
 //repeat 0:if peek(memory,cnt+0xd00000)=0{poke memory,cnt+0xd00000,peek(ti84bootstat,cnt)}:loop
-memcpy memory,ti84bootstat,16384,0xd00000,0
+memcpy memory,ti84bootstat,1024,0xd00000,0
 poke memory,0xD1A880,0xfb
 di4maintimer=0
 return
