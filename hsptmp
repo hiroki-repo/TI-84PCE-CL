@@ -467,11 +467,12 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 }else{
 if peek(memory,0x21448)=0xc3{
 lpoke memory,peek24(memory,0x21449),(0x21448<<8)|0xc3
+lpoke memory,peek24(memory,0x21435),(0x21434<<8)|0xc3
 }
 ptr4ovwrite=0x2014c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
-ptr4ovwrite=0x20320
+/*ptr4ovwrite=0x20320
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x20330
@@ -479,7 +480,7 @@ poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x204fc
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 ptr4ovwrite=0x2050c
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
@@ -511,6 +512,9 @@ ptr4ovwrite=0x21334
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x21338
+poke memory,0+ptr4ovwrite,0xcd
+lpoke memory,1+ptr4ovwrite,pcodeoftrc
+ptr4ovwrite=0x21434
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
 ptr4ovwrite=0x21448
@@ -2528,7 +2532,7 @@ gsel 0,0
 return
 
 *setdefaultvalue4app
-return
+//return
 poke memory,0xd00080+0x1b,64
 poke memory,0xd00000,0xcc
 poke24 memory,0xD0053F,0xD1A87E+3
