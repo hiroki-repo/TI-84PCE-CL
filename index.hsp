@@ -456,6 +456,9 @@ ptr4ovwrite=0x21d3c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 }else{
+if peek(memory,0x21448)=0xc3{
+lpoke memory,peek24(memory,0x21449),(0x21448<<8)|0xc3
+}
 ptr4ovwrite=0x2014c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
@@ -2019,6 +2022,15 @@ case 3
 		lpoke memory,0x500004,0xc3|(pointertosetinitforreinit<<8)
 		poke memory,0xD02505,25
 		poke memory,0xD00596,0
+		fstmpptxp=0x290000
+		fdtmpptxp=0x2c0000
+		fstmpptxp4saved=0x590000
+		fdtmpptxp4saved=0x5c0000
+		fstmpptxp=0xd90000
+		fdtmpptxp=0xdc0000
+		fdntmpptxp=0xdc0000
+		poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp
 	swbreak
 	default
 	if ((lpeek(eZ80_reg,0x34)<=privillegedspacer(0)) | (lpeek(eZ80_reg,0x34)>=privillegedspacer(1) & lpeek(eZ80_reg,0x34)<=privillegedspacer(2))){
