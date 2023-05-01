@@ -585,6 +585,25 @@ dim filedb_ptr,filemaxread
 dim filedb_siz,filemaxread
 
 dim keyseed,256*2
+dim keyseedime,256*2
+keyseedime(8)=0x9
+keyseedime(13)=0x5
+keyseedime(13|256)=0x6
+keyseedime(32)=0x31
+keyseedime(36)=0x2d
+keyseedime(37|256)=0x7
+keyseedime(39|256)=0x8
+keyseedime(37)=0x2,0x3,0x1,0x4
+keyseedime(45)=0xa
+keyseedime(46)=0xb
+repeat 10:keyseedime(48+cnt)=0x8e+cnt:loop
+repeat 25:keyseedime(65+cnt)=0x9a+cnt:loop
+repeat 25:keyseedime((65+cnt)|256)=0x9a+cnt:loop
+repeat 25:keyseedime((65+cnt))=153+73+cnt+((cnt>=13)+(cnt>=17)):loop
+keyseedime(93)=0x27
+keyseedime(112)=0x49,0x48,0x2e,0x5a,0x44
+keyseedime(226|256)=0x99
+
 
 keyseed(112)=0x35,0x34,0x33,0x32,0x31
 keyseed(36)=0x1f
@@ -1743,8 +1762,8 @@ case 3
 		swbreak
 		case 0x0020D8C//_GetKey
 		repeat:if (pressedkey=1){break}:await:loop
-		poke memory,0xd8000a,keycode4ret
-		//if pressedkey=1{poke memory,0xd8000a,keycode4ret}else{poke memory,0xd8000a,0}
+		poke memory,0xd8000a,keycode4ret4ime
+		keycode4ret4ime=0
 		pressedkey=0
 		keycode4ret=0
 		swbreak
@@ -2048,7 +2067,7 @@ case 3
 		poke24 memory,0xD0259D,fstmpptxp
 	swbreak
 	case 0xe8
-		if pressedkey=1{ret=((pressedkey=1)*(keycode4ret)):keycode4ret=0:pressedkey=0}else{ret=0}:return ret
+		if pressedkey=1{ret=((pressedkey=1)*(keycode4ret4ime)):keycode4ret4ime=0:keycode4ret=0:pressedkey=0}else{ret=0}:return ret
 	swbreak
 	default
 	if ((lpeek(eZ80_reg,0x34)<=privillegedspacer(0)) | (lpeek(eZ80_reg,0x34)>=privillegedspacer(1) & lpeek(eZ80_reg,0x34)<=privillegedspacer(2))){
@@ -2425,6 +2444,7 @@ return
 *getkeys_down
 wparam2x=wparam:if wparam2x=16{shifted=1}else{pressedkey=1
 keycode4ret=keyseed(wparam2x|((shifted!0)*256))
+keycode4ret4ime=keyseedime(wparam2x|((shifted!0)*256))
 *keyset4resetact
 keycode4ret4setks=keycode4ret|0x100
 if (wparam2x>='A' & wparam2x<='Z') | (shifted!0 & (wparam2x=189 | wparam2x=226)) | (shifted=0 & (wparam2x=186)){traccode=1}
