@@ -597,11 +597,25 @@ keyseedime(37)=0x2,0x3,0x1,0x4
 keyseedime(45)=0xa
 keyseedime(46)=0xb
 repeat 10:keyseedime(48+cnt)=0x8e+cnt:loop
+keyseedime(56|256)=0x85
+keyseedime(57|256)=0x86
 repeat 25:keyseedime(65+cnt)=0x9a+cnt:loop
 repeat 25:keyseedime((65+cnt)|256)=0x9a+cnt:loop
 repeat 25:keyseedime((65+cnt))=153+73+cnt+((cnt>=13)+(cnt>=17)):loop
 keyseedime(93)=0x27
 keyseedime(112)=0x49,0x48,0x2e,0x5a,0x44
+keyseedime(186)=0xc6
+keyseedime(186|256)=0x82
+keyseedime(187|256)=0x80
+keyseedime(188)=0x8b
+keyseedime(189)=0x81
+keyseedime(190)=0x8b
+keyseedime(191)=0x83
+keyseedime(219)=0x87
+keyseedime(219|256)=0xec
+keyseedime(221)=0x88
+keyseedime(221|256)=0xed
+keyseedime(222)=0xf0
 keyseedime(226|256)=0x99
 
 
@@ -2054,8 +2068,20 @@ case 3
 		cpu_set_speed 6000000/6000/5
 		poke memory,0x500003,0xf3
 		lpoke memory,0x500004,0xc3|(pointertosetinitforreinit<<8)
-		poke memory,0xD02505,25
-		poke memory,0xD00596,0
+		poke memory,0xD02504,0
+		poke memory,0xD02505,0xa//0xd5
+		//poke memory,0xD02505,25
+		poke memory,0xD00088,4
+		poke memory,0xD0008C,0x62
+		poke memory,0xD0008D,0x0E
+		poke memory,0xD0250F,255
+		poke memory,0xD00594,0x23
+		poke memory,0xD00595,0xd5
+		poke memory,0xD02684,0x25
+		poke memory,0xD00596,0x02
+		poke memory,0xD00599,0x20
+		lpoke memory,0xD00598,0x00022000
+		lpoke memory,0xD0059C,0x00D63784
 		fstmpptxp=0x290000
 		fdtmpptxp=0x2c0000
 		fstmpptxp4saved=0x590000
