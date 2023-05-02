@@ -464,6 +464,7 @@ lpoke memory,1+ptr4ovwrite,0x410000/**/
 ptr4ovwrite=0x21d3c//Key related
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
+#if 1
 }else{
 if peek(memory,0x21448)=0xc3{
 lpoke memory,peek24(memory,0x21449),(0x21448<<8)|0xc3
@@ -484,12 +485,12 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 ptr4ovwrite=0x2050c
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
-ptr4ovwrite=0x20514
+/*ptr4ovwrite=0x20514
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
-ptr4ovwrite=0x2051c
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
+/*ptr4ovwrite=0x2051c
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 ptr4ovwrite=0x20588
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc
@@ -526,9 +527,9 @@ lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 /*ptr4ovwrite=0x21a10
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
-ptr4ovwrite=0x21f98
+/*ptr4ovwrite=0x21f98
 poke memory,0+ptr4ovwrite,0xcd
-lpoke memory,1+ptr4ovwrite,pcodeoftrc
+lpoke memory,1+ptr4ovwrite,pcodeoftrc*/
 
 /*ptr4ovwrite=0x207b4
 poke memory,0+ptr4ovwrite,0xcd
@@ -543,6 +544,7 @@ ptr4ovwrite=0x207f0
 poke memory,0+ptr4ovwrite,0xcd
 lpoke memory,1+ptr4ovwrite,pcodeoftrc/**/
 }
+#endif
 
 bootromread=1
 }
@@ -562,6 +564,8 @@ poke memory,(0x0D00429+3)+2,peek(op_stack,2)
 
 dim sha256state,8
 dim sha256block,16
+
+sdim filenametreaden,64
 
 dupptr lcdiomemory,varptr(memory)+0xe30000,0x1000,2
 
@@ -674,6 +678,8 @@ makeclbkfunc cpagehandler, 1, *pagehandler,1
 
 dim memptrtmp,4096//1048576
 repeat 4096:memptrtmp(cnt)=varptr(memory)+cnt*4096:loop
+//memptrtmp(0xa00)=0//
+repeat 256:memptrtmp(0xa00+cnt)=0:loop
 memptrtmp(0xe10)=0
 memptrtmp(0xe30)=0
 memptrtmp(0xf00)=0
@@ -1114,6 +1120,52 @@ if (argv(0)&0xFFF)=0 & ((peek(controlportpoll,0x28)&(3<<2))!0){
 return 0
 }
 poke memory,argv(0),argv(1)
+if (argv(0)&0xF00000)=0xa00000{
+if (argv(0)&0xFFF000)=0xa00000{
+dupptr fname4readwritebase,varptr(memory)+0xd005f8+1,8,2
+}
+if (argv(0)&0xFFFFFF)>=0xa00002{
+datasize=wpeek(memory,0xa00000)
+//if (datasize/4096)!0{memptrtmp(0xa00+(datasize/4096))=0}
+if datasize<=(argv(0)-0xa00000) & datasize!0{
+//poke24 memory,0xd025a0,0xa00000
+poke24 memory,0xd025c8,0xa00000
+//dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
+dupptr fname4readwritebase,varptr(memory)+0xd005f8+1+0x18,8,2
+//dialog fname4readwritebase
+dupptr data4readfnamex,varptr(memory)+filevatptr,65536,2
+//if strmid(data4readfnamex,0,6)!"XHPARG"{dialog data4readfnamex}
+//dupptr dataname,varptr(memory)+__OP1Start+1,8,2
+dupptr dataname,varptr(memory)+0xd005f8+1+0x18,8,2
+sdim data4created,0x48+datasize+2
+wpoke data4created,0,0x2a2a
+lpoke data4created,2,0x33384954
+poke data4created,6,0x46
+lpoke data4created,7,0x000a1a2a
+poke data4created,11,'A'
+wpoke data4created,0x35,0x13+datasize
+poke data4created,0x37,0x0d
+wpoke data4created,0x39,datasize+2
+//poke data4created,0x3b,peek(memory,__OP1Start)
+poke data4created,0x3b,peek(memory,0xd005f8+0x18)
+memcpy data4created,dataname,(strlen(dataname)*(strlen(dataname)<=8))+(8*(strlen(dataname)>8)),0x3c,0
+poke data4created,0x45,0x80
+wpoke data4created,0x46,wpeek(data4created,0x39)
+//wpoke data4created,0x48,wpeek(data4created,0x39)-2
+memcpy data4created,memory,wpeek(data4created,0x39),0x48,0xa00000//datasize+2
+setcs4dsv data4created
+//dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
+sdim fname4readwritebasex,64
+dupptr fname4readwritebase,varptr(memory)+0xd005f8+1+0x18,8,2
+memcpy fname4readwritebasex,fname4readwritebase,8,0,0
+//await
+//dialog fname4readwritebasex+".8xv"
+bsave fname4readwritebasex+".8xv",data4created
+//bsave fname4readwritebasex+"_debug.8xv",data4created
+//if (datasize/4096)!0{memptrtmp(0xa00+(datasize/4096))=varptr(memory)+(0xa00+(datasize/4096))*4096}
+}
+}
+}
 return 0
 swbreak
 case 1
@@ -1138,6 +1190,37 @@ if sha256_index>=(0x60>>2) & sha256_index<(0x80>>2){
 	return peek(sha256state(index-(0x60>>2)),(argv(0)&3))
 }
 return 0
+}
+if (argv(0)&0xF00000)=0xa00000{
+if argv(0)>peek24(memory,0xD0259A) & peek24(memory,0xD0259A)>=0xa30000{filevatptr=argv(0)+1}
+//dialog strf("%06X",argv(0))
+sdim fname4readwritebasex,64
+dupptr fname4readwritebase,varptr(memory)+0xd005f8+1,8,2
+memcpy fname4readwritebasex,fname4readwritebase,8,0,0
+if filenametreaden!fname4readwritebasex{
+//dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
+//dupptr fname4readwritebase,varptr(memory)+0xd005f8+1,8,2
+dir4thefile=dir_cur+"\\"
+*fileread4apps
+exist dir4thefile+fname4readwritebasex+".8xv":strsize2=strsize
+if strsize2=-1 & dir4thefile=dir_cur+"\\"{dir4thefile=dir_exe+"\\":goto *fileread4apps}
+if strsize2!-1{
+sdim data4created,strsize2
+bload dir4thefile+fname4readwritebasex+".8xv",data4created
+memcpy memory,data4created,wpeek(data4created,0x48)+2,0xa00000,0x48
+memcpy filenametreaden,fname4readwritebase,8,0,0
+}
+await
+}
+datasize=wpeek(memory,0xa00000)
+//if (datasize/4096)!0 & (argv(0)&0xFFF000)=0xA00000{memptrtmp(0xa00)=0}
+//if (datasize/4096)!0{memptrtmp(0xa00+(datasize/4096))=0}
+if datasize<=(argv(0)-0xa00000){
+//poke24 memory,0xd025a0,0xa00000
+poke24 memory,0xd025c8,0xa00000
+//memptrtmp(0xa00)=varptr(memory)+(0xa00)*4096
+//if (datasize/4096)!0{memptrtmp(0xa00+(datasize/4096))=varptr(memory)+(0xa00+(datasize/4096))*4096}
+}
 }
 return peek(memory,argv(0))
 swbreak
@@ -1474,8 +1557,8 @@ case 3
 		poke memory,0xd80006+2,peek(hltmp,2)
 		swbreak
 		case 0x002050C//_ChkFindSym
-		fdtmpptxp=peek24(memory,0xD0259A)
-		fstmpptxp=peek24(memory,0xD0259D)
+		/*fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)*/
 *accessofChkFindSym4aua
 		fname4readwrite="":fname4readwritebase_fp4fs=""
 		dupptr fname4readwritebasetype,varptr(memory)+__OP1Start,0x1000000,2
@@ -1497,20 +1580,27 @@ case 3
 			fileid4target=-1
 			repeat fileidmaxed:if filedb_str(cnt)=fname4readwritebase{fileid4target=cnt:break}:loop
 			if (fileid4target=-1){
-				hltmp=(strsize2-76)
-				lpoke memory,fstmpptxp,strsize2-76
+				hltmp=(strsize2-59)
+				lpoke memory,fstmpptxp,strsize2-59
 				fstmpptxp+=3
 				detmp=lpeek(fdtmpptxp,0)
-				fdtmpptxp+=(strsize2-76)
-				dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-74),2
-				bload fname4readwrite,buffer4dataread,(strsize2-74),72
+				hltmp=lpeek(fdtmpptxp,0)
+				fdtmpptxp+=(strsize2-59)
+				/*dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-74),2
+				bload fname4readwrite,buffer4dataread,(strsize2-74),72*/
+				dupptr buffer4dataread,varptr(memory)+detmp,(strsize2-57),2
+				bload fname4readwrite,buffer4dataread,(strsize2-57),55
+				detmp+=17
+				bload fname4readwrite,fileexttypeinfo,1,0x3b
+				poke memory,0xd8000a,fileexttypeinfo
 				memcpy filedb_str(fileidmaxed),fname4readwritebase,8,0,0
 				filedb_ptr(fileidmaxed)=(lpeek(detmp,0)&0xFFFFFF)|((peek(fname4readwritebasetype,0))<<24)
-				filedb_siz(fileidmaxed)=(strsize2-74)
+				filedb_siz(fileidmaxed)=(strsize2-76)
 				fileidmaxed++
+				hltmp+=17
 			}else{
 				detmp=filedb_ptr(fileid4target)
-				hltmp=(lpeek(memory,fstmpptxpbase+(3*fileid4target))&0xFFFFFF)
+				hltmp=peek24(detmp,0)//(lpeek(memory,fstmpptxpbase+(3*fileid4target))&0xFFFFFF)
 			}
 		}
 
@@ -1525,8 +1615,8 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
-		poke24 memory,0xD0259A,fdtmpptxp
-		poke24 memory,0xD0259D,fstmpptxp
+		/*poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp*/
 		swbreak
 		case 0x0020514//_InsertMem
 		detmp=(lpeek(memory,0xd80003)&0xFFFFFF)+(lpeek(memory,0xd80006)&0xFFFFFF)
@@ -1538,8 +1628,8 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
-		poke24 memory,0xD0259A,fdtmpptxp
-		poke24 memory,0xD0259D,fstmpptxp
+		/*poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp*/
 		swbreak
 		case 0x002051C//_EnoughMem
 		poke memory,0xd80009,peek(memory,0xd80009)&0xFE
@@ -1948,12 +2038,13 @@ case 3
 		}else{
 		poke memory,0xd80009,peek(memory,0xd80009)&((-1)-64)
 		}
+		poke memory,0xd8000a,0xd0
 		swbreak
 		case 0x0021330//_CreateAppVar
 		case 0x0021334//_CreateProtProg
 		case 0x0021338//_CreateVar
-		fdtmpptxp=peek24(memory,0xD0259A)
-		fstmpptxp=peek24(memory,0xD0259D)
+		/*fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)*/
 		hltmp=__OP1Start
 		lpoke memory,fstmpptxp,(lpeek(memory,0xd80006)&0xFFFFFF)
 		fstmpptxp+=3
@@ -1968,12 +2059,12 @@ case 3
 		poke memory,0xd80006+0,peek(hltmp,0)
 		poke memory,0xd80006+1,peek(hltmp,1)
 		poke memory,0xd80006+2,peek(hltmp,2)
-		poke24 memory,0xD0259A,fdtmpptxp
-		poke24 memory,0xD0259D,fstmpptxp
+		/*poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp*/
 		swbreak
 		case 0x0021448//_Arc_Unarc
-		fdtmpptxp=peek24(memory,0xD0259A)
-		fstmpptxp=peek24(memory,0xD0259D)
+		/*fdtmpptxp=peek24(memory,0xD0259A)
+		fstmpptxp=peek24(memory,0xD0259D)*/
 		dupptr fname4readwritebase,varptr(memory)+__OP1Start+1,8,2
 		dupptr dataname,varptr(memory)+__OP1Start+1,8,2
 		datasize=(lpeek(memory,0xD0257B)&0xFFFFFF)//(lpeek(memory,0xd80006)&0xFFFFFF)
@@ -2049,8 +2140,8 @@ case 3
 		if fdtmpptxp>=0xE00000{fdtmpptxp=0xDA0000}
 		if fstmpptxp>=0xDA0000{fstmpptxp=0xD90000}
 		
-		poke24 memory,0xD0259A,fdtmpptxp
-		poke24 memory,0xD0259D,fstmpptxp
+		/*poke24 memory,0xD0259A,fdtmpptxp
+		poke24 memory,0xD0259D,fstmpptxp*/
 		swbreak
 		default
 		logmes "Unimplemented syscall("+strf("%06X",syscallnumber)+") occurred"
@@ -2069,8 +2160,8 @@ case 3
 		if GetTI84PCEPrgmType(img4exec)!"App"{
 		memcpy memory,img4exec,varsize(img4exec)-76,0xD1A881,76
 		}
+		cpu_set_speed (6000000/6000/5)*2
 		//poke memory,0xD1A880,0xfb
-		cpu_set_speed 6000000/6000/5
 		poke memory,0x500003,0xf3
 		lpoke memory,0x500004,0xc3|(pointertosetinitforreinit<<8)
 		poke memory,0xD02504,0
@@ -2094,8 +2185,8 @@ case 3
 		fstmpptxp=0xd90000
 		fdtmpptxp=0xdc0000
 		fdntmpptxp=0xdc0000
-		poke24 memory,0xD0259A,fdtmpptxp
-		poke24 memory,0xD0259D,fstmpptxp
+		//poke24 memory,0xD0259A,fdtmpptxp
+		//poke24 memory,0xD0259D,fstmpptxp
 	swbreak
 	case 0xe8
 		if pressedkey=1{ret=((pressedkey=1)*(keycode4ret4ime)):keycode4ret4ime=0:keycode4ret=0:pressedkey=0}else{ret=0}:return ret
@@ -2592,8 +2683,84 @@ fstmpptxp_tmp=peek24(memory,0xD0259D)*/
 //repeat 0:if peek(memory,cnt+0xd00000)=0{poke memory,cnt+0xd00000,peek(ti84bootstat,cnt)}:loop
 memcpy memory,ti84bootstat,1024,0xd00000,0
 memcpy memory,ti84bootstat,16384-0x3000,0xd03000,0x3000
-/*poke24 memory,0xD0259A,fdtmpptxp_tmp
-poke24 memory,0xD0259D,fstmpptxp_tmp*/
+/*memcpy memory,memory,0xd40000-peek24(memory,0xD0259A),peek24(memory,0xD0259A)-0x300000,peek24(memory,0xD0259A)
+poke24 memory,0xD0259A,peek24(memory,0xD0259A)-0x300000
+poke24 memory,0xD0259D,peek24(memory,0xD0259D)-0x300000*/
 //poke memory,0xD1A880,0xfb
 di4maintimer=0
+//poke24 memory,0xd025a0,0xa00000
+poke24 memory,0xd025c8,0xa00000
+gosub *fileinit4app
+memset memory,255,symtableptr-0xD2A881,0xD2A881
+return
+
+*fileinit4app
+dirlist filelist48xser1,dir_exe+"\\*.8xv",1
+notesel filelist48xser1
+repeat notemax
+noteget filelist48xser12slc,cnt
+filelist48xser12slc=dir_exe+"\\"+filelist48xser12slc
+noteadd filelist48xser12slc,cnt,1
+loop
+noteunsel
+dirlist filelist48xser2,dir_cur+"\\*.8xv",1
+notesel filelist48xser2
+repeat notemax
+noteget filelist48xser12slc,cnt
+filelist48xser12slc=dir_cur+"\\"+filelist48xser12slc
+noteadd filelist48xser12slc,cnt,1
+loop
+noteunsel
+notesel filelist48xser1
+notemax4rmsame=notemax&0xFFFFFFFF
+noteunsel
+repeat notemax4rmsame
+notesel filelist48xser1
+noteget filelist48xser1slice,cnt
+noteunsel
+notesel filelist48xser2
+repeat notemax
+noteget filelist48xser2slice,cnt
+if filelist48xser1slice=filelist48xser2slice{notedel cnt:break}
+loop
+noteunsel
+loop
+filelist48xser=""
+if filelist48xser1=filelist48xser2{filelist48xser=filelist48xser1}else{filelist48xser=filelist48xser1+filelist48xser2}
+notesel filelist48xser
+sdim buffer4daatdesc,0x48
+sdim buffer4daatdescf,9
+symtableptr=peek24(memory,0xd0259d)
+//filenamedesc4vf=""
+//filetypedesc=0
+repeat notemax
+memset buffer4daatdescf,0,9,0
+memcpy buffer4daatdescf,buffer4daatdesc,8,0,0x3c
+noteget fname4symtable,cnt
+bload fname4symtable,buffer4daatdesc
+//filenamedesc4vf+=buffer4daatdescf+"\n"
+if cnt=(notemax-1){poke24 memory,0xd0257b,symtableptr}
+if symtableptr<0xd1a881 & symtableptr>=0xd40000{break}
+poke memory,symtableptr&0xFFFFFF,peek(buffer4daatdesc,0x3b):symtableptr--
+poke memory,symtableptr&0xFFFFFF,0:symtableptr--
+poke memory,symtableptr&0xFFFFFF,0:symtableptr--
+poke memory,symtableptr&0xFFFFFF,0x00:symtableptr--
+poke memory,symtableptr&0xFFFFFF,0x00:symtableptr--
+poke memory,symtableptr&0xFFFFFF,0xa0:symtableptr--
+poke memory,symtableptr&0xFFFFFF,strlen(buffer4daatdescf):symtableptr--
+//repeat strlen(buffer4daatdescf):if peek(buffer4daatdescf,cnt)>='a' & peek(buffer4daatdescf,cnt)<='z'{poke buffer4daatdescf,cnt,peek(buffer4daatdescf,cnt)-32}:loop
+repeat strlen(buffer4daatdescf):poke memory,symtableptr&0xFFFFFF,peek(buffer4daatdescf,cnt):symtableptr--:loop
+loop
+if symtableptr>=0xd1a881 & symtableptr<0xd40000{
+//symtableptr&=0xFFFFFF
+logmes strf("%06X",symtableptr)
+dupptr vat4debug,varptr(memory)+(symtableptr&0xFFFFFF),0xd40000-(symtableptr&0xFFFFFF),2
+dupptr vatdesc4debug,varptr(memory)+0xd0259a,6,2
+dupptr memofsavevector,varptr(memory)+0xa00000,65536,2
+//bsave "vat4debug.dump",vat4debug
+poke24 memory,0xD0259A,symtableptr
+poke24 memory,0xD02590,symtableptr
+poke24 memory,0xD02593,symtableptr
+}
+noteunsel
 return
