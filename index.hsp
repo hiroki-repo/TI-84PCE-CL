@@ -1080,7 +1080,7 @@ loop
 //lpoke memory,0x6c2,0xc3|(pointertosetinit<<8)
 if appreinit=1{lpoke memory,0x4,0xc3|(pointertosetinit<<8)}
 //lpoke memory,0x4,0xc3|(pointertosetinit<<8)
-if appreinit=2{appreinit=0:gosub *setdefaultvalue4app:goto *retemulation}
+if appreinit=2{appreinit=0:gosub *fileinit4app:goto *retemulation}
 if appreinit=1{appreinit=0:lpoke ez80_reg,0x30,0:lpoke ez80_reg,0x34,lpeek(ez80_reg,0x30)+1:goto *initappagain}
 stop
 
@@ -2912,13 +2912,13 @@ poke24 memory,0xd0259d,0xd3ffff*/
 di4maintimer=0
 oncesavetodev=0
 //poke24 memory,0xd025a0,0xd90000
-poke24 memory,0xd025c8,0xd90000
-poke24 memory,0xd02680,0xd90000
 gosub *fileinit4app
 //memset memory,255,symtableptr-0xD2A881,0xD2A881
 return
 
 *fileinit4app
+poke24 memory,0xd025c8,0xd90000
+poke24 memory,0xd02680,0xd90000
 dirlist filelist48xser1,dir_exe+"\\*.8x?",1
 notesel filelist48xser1
 repeat notemax
