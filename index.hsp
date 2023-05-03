@@ -752,10 +752,12 @@ poke memory,0xe20104,0xff
 
 dupptr memory4userspace,varptr(memory)+0xd00000,0x80000,2
 
+if bootromread=1{
 if dircmdlines!""{
 appreinit=1
 }else{
 appreinit=2
+}
 }
 
 *initappagain
