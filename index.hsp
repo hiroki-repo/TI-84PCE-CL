@@ -727,6 +727,13 @@ memptrtmp(0xf20)=0
 memptrtmp(0xf30)=0
 memptrtmp(0xf50)=0
 memaccessptrset varptr(memptrtmp),4096//16777216
+lpoke memory,0x900000,0xcd|(0x020320<<8)
+lpoke memory,0x900004,0x01|(0<<8)
+lpoke memory,0x900008,0x21|(0xd90000<<8)
+lpoke memory,0x90000C,0x2346234e
+lpoke memory,0x900010,0x11|(0xd1a87f<<8)
+wpoke memory,0x900014,0xb0ed
+lpoke memory,0x900016,0xc3|(0xd1a881<<8)
 //repeat 12:memptrtmp(cnt+3392)=varptr(vram48bt)+(cnt*4096):loop
 
 setpagehandler cpagehandler
@@ -2146,7 +2153,7 @@ case 3
 		addr4arceddata=peek(memory,symtableptr):symtableptr--
 		addr4arceddata|=(peek(memory,symtableptr)<<(8*1)):symtableptr--
 		addr4arceddata|=(peek(memory,symtableptr)<<(8*2)):symtableptr--
-		named4arceddata=lpeek(symtableptr,0)
+		named4arceddata=(lpeek(symtableptr,0)!0)
 		if symtableptr>peek24(memory,0xd0259a) & symtableptr<=peek24(memory,0xd0259d){
 			arceddatanamelen=peek(memory,symtableptr):symtableptr--
 		}else{
@@ -2954,11 +2961,13 @@ loop
 filelist48xser=""
 if filelist48xser1=filelist48xser2{filelist48xser=filelist48xser1}else{filelist48xser=filelist48xser1+filelist48xser2}
 notesel filelist48xser
-sdim buffer4daatdesc,0x48
+sdim buffer4daatdesc,0x4c
 sdim buffer4daatdescf,9
-symtableptr=peek24(memory,0xd0259d)
+//symtableptr=peek24(memory,0xd0259d)
+symtableptr=peek24(memory,0xd0259a)
 //filenamedesc4vf=""
 //filetypedesc=0
+virtualappshortcut=0xa00000
 repeat notemax
 memset buffer4daatdescf,0,9,0
 noteget fname4symtable,cnt
@@ -2970,7 +2979,7 @@ if symtableptr<0xd1a881 & symtableptr>=0xd40000{break}
 poke memory,symtableptr&0xFFFFFF,peek(buffer4daatdesc,0x3b):symtableptr--
 poke memory,symtableptr&0xFFFFFF,0:symtableptr--
 poke memory,symtableptr&0xFFFFFF,0:symtableptr--
-virtualobjectptx=0xd90000//0xd90000//-9-(symtableptr-3)-strlen(buffer4daatdescf)
+if wpeek(buffer4daatdesc,0x4a)=0x7bef{virtualobjectptx=lpeek(virtualappshortcut,0):poke memory,virtualappshortcut+0,0xfc:poke memory,virtualappshortcut+3,peek(buffer4daatdesc,0x3b):poke24 memory,virtualappshortcut+6,virtualappshortcut:poke memory,virtualappshortcut+9,strlen(buffer4daatdescf):memcpy memory,buffer4daatdescf,strlen(buffer4daatdescf),virtualappshortcut+10,0:virtualappshortcut+=9+1+strlen(buffer4daatdescf):wpoke memory,virtualappshortcut,20+2:wpoke memory,virtualappshortcut+2,0x7bef:lpoke memory,virtualappshortcut+(4*0)+2+2,0x21|((virtualappshortcut+8+2+2)<<8):lpoke memory,virtualappshortcut+(4*1)+2+2,0xc3|(0x900000<<8):poke memory,virtualappshortcut+(4*2)+2+2,peek(buffer4daatdesc,0x3b):memcpy memory,buffer4daatdescf,9,virtualappshortcut+8+2+2+1,0:virtualappshortcut+=20+2+2:wpoke memory,virtualobjectptx+1,virtualappshortcut-(virtualobjectptx+1)}else{virtualobjectptx=0xd90000}
 poke memory,symtableptr&0xFFFFFF,peek(virtualobjectptx,0):symtableptr--
 poke memory,symtableptr&0xFFFFFF,peek(virtualobjectptx,1):symtableptr--
 poke memory,symtableptr&0xFFFFFF,peek(virtualobjectptx,2):symtableptr--
